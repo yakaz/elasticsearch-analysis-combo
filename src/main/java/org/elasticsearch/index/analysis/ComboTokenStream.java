@@ -24,10 +24,9 @@ import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.util.Attribute;
 import org.apache.lucene.util.AttributeImpl;
 import org.apache.lucene.util.AttributeSource;
-import org.elasticsearch.common.logging.ESLogger;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.AbstractQueue;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 
@@ -52,7 +51,7 @@ public class ComboTokenStream extends TokenStream {
     // Position tracked sub-TokenStreams
     private final PositionedTokenStream[] positionedTokenStreams;
     // Reading queue, using the reading order from PositionedTokenStream
-    private final PriorityQueue<PositionedTokenStream> readQueue;
+    private final AbstractQueue<PositionedTokenStream> readQueue;
     // Flag for lazy initialization and reset
     private boolean readQueueResetted;
 
@@ -86,6 +85,7 @@ public class ComboTokenStream extends TokenStream {
             readQueueResetted = true;
             readQueue.clear();
             for (PositionedTokenStream pts : positionedTokenStreams) {
+                if (pts == null) continue;
                 // Read first token
                 if (pts.incrementToken()) {
                     // PositionedTokenStream.incrementToken() initialized internal
@@ -140,7 +140,6 @@ public class ComboTokenStream extends TokenStream {
 
     @Override public void end() throws IOException {
         super.end();
-        super.clearAttributes();
         lastPosition = 0;
         // Apply on each sub-TokenStream
         for (PositionedTokenStream pts : positionedTokenStreams) {
@@ -166,7 +165,6 @@ public class ComboTokenStream extends TokenStream {
 
     @Override public void close() throws IOException {
         super.close();
-        super.clearAttributes();
         lastPosition = 0;
         // Apply on each sub-TokenStream
         for (PositionedTokenStream pts : positionedTokenStreams) {

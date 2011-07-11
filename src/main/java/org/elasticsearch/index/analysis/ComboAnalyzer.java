@@ -22,6 +22,7 @@ package org.elasticsearch.index.analysis;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.ReusableStringReaderCloner;
+import org.apache.lucene.util.CloseableThreadLocal;
 import org.apache.lucene.util.Version;
 import org.elasticsearch.ElasticSearchIllegalArgumentException;
 import org.elasticsearch.common.inject.Injector;
@@ -58,9 +59,9 @@ public class ComboAnalyzer extends Analyzer {
     private final String name;
 
     private Analyzer[] subAnalyzers;
-    private TokenStream[] lastTokenStreams;
-    private TokenStream[] tempTokenStreams;
-    private ComboTokenStream lastComboTokenStream;
+    private CloseableThreadLocal<TokenStream[]> lastTokenStreams = new CloseableThreadLocal<TokenStream[]>();
+    private CloseableThreadLocal<TokenStream[]> tempTokenStreams = new CloseableThreadLocal<TokenStream[]>();
+    private CloseableThreadLocal<ComboTokenStream> lastComboTokenStream = new CloseableThreadLocal<ComboTokenStream>();
 
     public ComboAnalyzer(Version version, String name, Settings settings, Injector injector) {
         logger = ESLoggerFactory.getLogger(ComboAnalyzer.NAME+">"+name);
@@ -74,9 +75,6 @@ public class ComboAnalyzer extends Analyzer {
         this.version = version;
 
         this.subAnalyzers = null;
-        this.lastTokenStreams = null;
-        this.tempTokenStreams = null;
-        this.lastComboTokenStream = null;
     }
 
     @Override public TokenStream tokenStream(String fieldName, Reader originalReader) {
@@ -147,8 +145,11 @@ public class ComboAnalyzer extends Analyzer {
 
         // We remember last used TokenStreams because many times Analyzers can provide a reusable TokenStream
         // Detecting that all sub-TokenStreams are reusable permits to reuse our ComboTokenStream as well.
-        if (tempTokenStreams == null) tempTokenStreams = new TokenStream[subAnalyzers.length]; // each time non reusability has been detected
-        if (lastTokenStreams == null) lastTokenStreams = new TokenStream[subAnalyzers.length]; // only at first run
+        if (tempTokenStreams.get() == null) tempTokenStreams.set(new TokenStream[subAnalyzers.length]); // each time non reusability has been detected
+        if (lastTokenStreams.get() == null) lastTokenStreams.set(new TokenStream[subAnalyzers.length]); // only at first run
+        TokenStream[] tempTokenStreams_local = tempTokenStreams.get();
+        TokenStream[] lastTokenStreams_local = lastTokenStreams.get();
+        ComboTokenStream lastComboTokenStream_local = lastComboTokenStream.get();
 
         // Get sub-TokenStreams from sub-analyzers
         for (int i = subAnalyzers.length-1 ; i >= 0 ; --i) {
@@ -157,36 +158,38 @@ public class ComboAnalyzer extends Analyzer {
             Reader reader = readerCloner.giveAClone();
             // Try a reusable sub-TokenStream
             try {
-                tempTokenStreams[i] = subAnalyzers[i].reusableTokenStream(fieldName, reader);
+                tempTokenStreams_local[i] = subAnalyzers[i].reusableTokenStream(fieldName, reader);
             } catch (IOException ex) {
-                tempTokenStreams[i] = subAnalyzers[i].tokenStream(fieldName, reader);
+                tempTokenStreams_local[i] = subAnalyzers[i].tokenStream(fieldName, reader);
             }
             // Detect non reusability
-            if (tempTokenStreams[i] != lastTokenStreams[i]) {
-                lastComboTokenStream = null;
+            if (tempTokenStreams_local[i] != lastTokenStreams_local[i]) {
+                lastComboTokenStream_local = null;
             }
 
         }
 
         // If last ComboTokenStream is not available create a new one
         // This happens in the first call and in case of non reusability
-        if (lastComboTokenStream == null) {
-            // Swap temporary and last (non reusable) TokenStream references
-            TokenStream[] tmp = lastTokenStreams;
-            lastTokenStreams = tempTokenStreams;
-            tempTokenStreams = tmp;
+        if (lastComboTokenStream_local == null) {
             // Clear old invalid references (preferred over allocating a new array)
-            Arrays.fill(tempTokenStreams, null);
+            Arrays.fill(lastTokenStreams_local, null);
+            // Swap temporary and last (non reusable) TokenStream references
+            lastTokenStreams.set(tempTokenStreams_local);
+            tempTokenStreams.set(lastTokenStreams_local);
             // New ComboTokenStream to use
-            lastComboTokenStream = new ComboTokenStream(lastTokenStreams);
+            lastComboTokenStream_local = new ComboTokenStream(tempTokenStreams_local);
+            lastComboTokenStream.set(lastComboTokenStream_local);
         }
-        return lastComboTokenStream;
+        return lastComboTokenStream_local;
     }
 
     /**
      * Read settings and load the appropriate sub-analyzers.
      */
+    synchronized
     protected void init() {
+        if (subAnalyzers != null) return;
         AnalysisService analysisService = injector.getInstance(AnalysisService.class);
 
         String[] sub = settings.getAsArray("sub_analyzers");
@@ -207,4 +210,10 @@ public class ComboAnalyzer extends Analyzer {
         this.subAnalyzers = subAnalyzers.toArray(new Analyzer[subAnalyzers.size()]);
     }
 
+    @Override public void close() {
+        super.close();
+        lastTokenStreams.close();
+        tempTokenStreams.close();
+        lastComboTokenStream.close();
+    }
 }
