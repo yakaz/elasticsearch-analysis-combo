@@ -39,17 +39,26 @@ import java.lang.reflect.Field;
  */
 public class FastCharArrayReaderCloner implements ReaderCloner {
 
+    private static Field internalField;
+
     private FastCharArrayReader original;
     private char[] originalContent;
+
+    static {
+        try {
+            internalField = FastCharArrayReader.class.getDeclaredField("buf");
+            internalField.setAccessible(true);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Could not give accessibility to private \"buf\" field of the given FastCharArrayReader", ex);
+        }
+    }
 
     public FastCharArrayReaderCloner(FastCharArrayReader original) throws IllegalArgumentException {
         try {
             this.original = original;
-            Field f = original.getClass().getDeclaredField("buf");
-            f.setAccessible(true);
-            this.originalContent = (char[]) f.get(original);
+            this.originalContent = (char[]) internalField.get(original);
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Could not access private \"str\" field of the given StringReader (actual class: "+original.getClass().getCanonicalName()+")", ex);
+            throw new IllegalArgumentException("Could not access private \"buf\" field of the given FastCharArrayReader (actual class: "+original.getClass().getCanonicalName()+")", ex);
         }
     }
 

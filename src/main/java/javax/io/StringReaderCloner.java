@@ -40,15 +40,24 @@ import java.lang.reflect.Field;
  */
 public class StringReaderCloner implements ReaderCloner {
 
+    private static Field internalField;
+
     private StringReader original;
     private String originalContent;
+
+    static {
+        try {
+            internalField = StringReader.class.getDeclaredField("str");
+            internalField.setAccessible(true);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Could not give accessibility to private \"str\" field of the given StringReader", ex);
+        }
+    }
 
     public StringReaderCloner(StringReader original) throws IllegalArgumentException {
         try {
             this.original = original;
-            Field f = original.getClass().getDeclaredField("str");
-            f.setAccessible(true);
-            this.originalContent = (String) f.get(original);
+            this.originalContent = (String) internalField.get(original);
         } catch (Exception ex) {
             throw new IllegalArgumentException("Could not access private \"str\" field of the given StringReader (actual class: "+original.getClass().getCanonicalName()+")", ex);
         }
