@@ -6,7 +6,10 @@ This analyzer combines multiple analyzers into one and is based on the work of O
 Installation
 -----------
 
-bin/plugin -install jprante/elasticsearch-analysis-combo/1.0.0
+	bin/plugin -install jprante/elasticsearch-analysis-combo/1.0.0
+
+Introduction
+------------
 
 If you have a multilingual index, where each document has its source language, you can analyze the text fields using an analyzer based on the detected language. 
 But what if you can't detect the language, the language detected was wrong, or aggressive stemming deforms the indexed terms? Or if you want to use other language-specific analyzers at search time, but still like to search original word forms indexed in another language?
@@ -112,4 +115,5 @@ It is good practice to use the combo analyzer against index and also against sea
 See also 
 
 https://github.com/elasticsearch/elasticsearch/issues/1128
+
 https://issues.apache.org/jira/browse/LUCENE-3392
