@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.elasticsearch</groupId>
     <artifactId>elasticsearch-analysis-combo</artifactId>
-    <version>1.0.1-SHAPSHOT</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
     <description>ElasticSearch Combo Analyzer Plugin</description>
     <inceptionYear>2011</inceptionYear>
