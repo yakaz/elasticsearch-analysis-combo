@@ -6,7 +6,7 @@ This analyzer combines multiple analyzers into one and is based on the work of O
 Installation
 -----------
 
-	bin/plugin -install jprante/elasticsearch-analysis-combo/1.0.0
+	bin/plugin -install yakaz/elasticsearch-analysis-combo/1.0.1
 
 Introduction
 ------------
