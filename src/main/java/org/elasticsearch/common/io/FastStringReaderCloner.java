@@ -19,7 +19,9 @@
 
 package org.elasticsearch.common.io;
 
-import javax.io.ReaderCloner;
+import org.apache.lucene.util.ReaderCloneFactory;
+
+import java.io.IOException;
 import java.io.Reader;
 
 /**
@@ -30,13 +32,14 @@ import java.io.Reader;
  * 
  * @author ofavre
  */
-public class FastStringReaderCloner implements ReaderCloner {
+public class FastStringReaderCloner implements ReaderCloneFactory.ReaderCloner<FastStringReader> {
 
     private FastStringReader original;
     private String originalContent;
 
-    public FastStringReaderCloner(FastStringReader original) {
-        this.original = original;
+    @Override
+    public void init(FastStringReader originalReader) throws IOException {
+        this.original = originalReader;
         this.originalContent = original.toString();
     }
 

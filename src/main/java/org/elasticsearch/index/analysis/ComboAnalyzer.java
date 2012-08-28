@@ -21,30 +21,22 @@ package org.elasticsearch.index.analysis;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.index.ReusableStringReaderCloner;
-import org.apache.lucene.util.CloseableThreadLocal;
+import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.util.Version;
 import org.elasticsearch.ElasticSearchIllegalArgumentException;
 import org.elasticsearch.common.inject.Injector;
-import org.elasticsearch.common.io.FastCharArrayReader;
-import org.elasticsearch.common.io.FastCharArrayReaderCloner;
-import org.elasticsearch.common.io.FastStringReader;
-import org.elasticsearch.common.io.FastStringReaderCloner;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
+import org.elasticsearch.common.lucene.Lucene;
 import org.elasticsearch.common.settings.Settings;
 
-import javax.io.ReaderCloner;
-import javax.io.ReaderClonerDefaultImpl;
-import javax.io.StringReaderCloner;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * ElasticSearch ComboAnalyzer wrapper over Lucene ComboAnalyzer.
+ *
  * @author ofavre
  */
 public class ComboAnalyzer extends Analyzer {
@@ -58,10 +50,7 @@ public class ComboAnalyzer extends Analyzer {
     private final Version version;
     private final String name;
 
-    private Analyzer[] subAnalyzers;
-    private CloseableThreadLocal<TokenStream[]> lastTokenStreams = new CloseableThreadLocal<TokenStream[]>();
-    private CloseableThreadLocal<TokenStream[]> tempTokenStreams = new CloseableThreadLocal<TokenStream[]>();
-    private CloseableThreadLocal<ComboTokenStream> lastComboTokenStream = new CloseableThreadLocal<ComboTokenStream>();
+    private org.apache.lucene.analysis.ComboAnalyzer analyzer;
 
     public ComboAnalyzer(Version version, String name, Settings settings, Injector injector) {
         logger = ESLoggerFactory.getLogger(ComboAnalyzer.NAME+">"+name);
@@ -74,114 +63,13 @@ public class ComboAnalyzer extends Analyzer {
         this.settings = settings;
         this.version = version;
 
-        this.subAnalyzers = null;
+        this.analyzer = null; // must be lazy initialized to get free of the cyclic dependency on AnalysisService
     }
 
     @Override public TokenStream tokenStream(String fieldName, Reader originalReader) {
-        // First call lazy loading of sub-analyzers
-        // Here, we are free of the cyclic dependency on AnalysisService
-        if (subAnalyzers == null) {
-            init();
-        }
+        if (analyzer == null) init();
 
-        // Duplication of the original reader, to feed all sub-analyzers
-        ReaderCloner readerCloner = null;
-        if (subAnalyzers.length <= 1) {
-
-            // Can reuse the only reader we have, there will be no need of duplication
-            // Usage of the AtomicReference ensures that the same reader won't be duplicated.
-            final AtomicReference<Reader> singleUsageReference = new AtomicReference<Reader>(originalReader);
-            readerCloner = new ReaderCloner() {
-                @Override public Reader giveAClone() {
-                    return singleUsageReference.getAndSet(null);
-                }
-            };
-
-        } else {
-
-            // Try multiple optimized specialized ReaderCloner
-            try {
-                if (originalReader instanceof FastStringReader) {
-
-                    @SuppressWarnings("unchecked") FastStringReader typedReader = (FastStringReader)originalReader;
-                    readerCloner = new FastStringReaderCloner(typedReader);
-
-                } else if (ReusableStringReaderCloner.canHandleReader(originalReader)) {
-
-                    readerCloner = new ReusableStringReaderCloner(originalReader);
-
-                } else if (originalReader instanceof StringReader) {
-
-                    @SuppressWarnings("unchecked") StringReader typedReader = (StringReader)originalReader;
-                    readerCloner = new StringReaderCloner(typedReader);
-
-                } else if (originalReader instanceof FastCharArrayReader) {
-
-                    @SuppressWarnings("unchecked") FastCharArrayReader typedReader = (FastCharArrayReader)originalReader;
-                    readerCloner = new FastCharArrayReaderCloner(typedReader);
-
-                }
-            } catch (Exception ex) {
-                logger.debug("Exception while trying to duplicate a known Reader subclass instance. Will fallback to the default implementation.", ex);
-            }
-
-            // In case we did not have the opportunity to use a specialized ReaderCloner, or we encountered an exception.
-            // Use the fallback implementation
-            if (readerCloner == null) {
-                logger.debug("The reader is not an instance of a known class, it is a " + originalReader.getClass().getCanonicalName() + " and it cannot be used in an optimal manner!");
-                try {
-                    readerCloner = new ReaderClonerDefaultImpl(originalReader);
-                } catch (IOException ex) {
-                    logger.debug("Error while using last-resort duplication of an unknown Reader class", ex);
-                }
-            }
-
-            // Even the default implementation failed, we cannot proceed
-            if (readerCloner == null) {
-                throw new ElasticSearchIllegalArgumentException("Could not duplicate the original reader to feed multiple sub-readers");
-            }
-
-        }
-
-        // We remember last used TokenStreams because many times Analyzers can provide a reusable TokenStream
-        // Detecting that all sub-TokenStreams are reusable permits to reuse our ComboTokenStream as well.
-        if (tempTokenStreams.get() == null) tempTokenStreams.set(new TokenStream[subAnalyzers.length]); // each time non reusability has been detected
-        if (lastTokenStreams.get() == null) lastTokenStreams.set(new TokenStream[subAnalyzers.length]); // only at first run
-        TokenStream[] tempTokenStreams_local = tempTokenStreams.get();
-        TokenStream[] lastTokenStreams_local = lastTokenStreams.get();
-        ComboTokenStream lastComboTokenStream_local = lastComboTokenStream.get();
-
-        // Get sub-TokenStreams from sub-analyzers
-        for (int i = subAnalyzers.length-1 ; i >= 0 ; --i) {
-
-            // Feed the troll
-            Reader reader = readerCloner.giveAClone();
-            // Try a reusable sub-TokenStream
-            try {
-                tempTokenStreams_local[i] = subAnalyzers[i].reusableTokenStream(fieldName, reader);
-            } catch (IOException ex) {
-                tempTokenStreams_local[i] = subAnalyzers[i].tokenStream(fieldName, reader);
-            }
-            // Detect non reusability
-            if (tempTokenStreams_local[i] != lastTokenStreams_local[i]) {
-                lastComboTokenStream_local = null;
-            }
-
-        }
-
-        // If last ComboTokenStream is not available create a new one
-        // This happens in the first call and in case of non reusability
-        if (lastComboTokenStream_local == null) {
-            // Clear old invalid references (preferred over allocating a new array)
-            Arrays.fill(lastTokenStreams_local, null);
-            // Swap temporary and last (non reusable) TokenStream references
-            lastTokenStreams.set(tempTokenStreams_local);
-            tempTokenStreams.set(lastTokenStreams_local);
-            // New ComboTokenStream to use
-            lastComboTokenStream_local = new ComboTokenStream(tempTokenStreams_local);
-            lastComboTokenStream.set(lastComboTokenStream_local);
-        }
-        return lastComboTokenStream_local;
+        return analyzer.tokenStream(fieldName, originalReader);
     }
 
     /**
@@ -189,7 +77,7 @@ public class ComboAnalyzer extends Analyzer {
      */
     synchronized
     protected void init() {
-        if (subAnalyzers != null) return;
+        if (analyzer != null) return;
         AnalysisService analysisService = injector.getInstance(AnalysisService.class);
 
         String[] sub = settings.getAsArray("sub_analyzers");
@@ -207,13 +95,34 @@ public class ComboAnalyzer extends Analyzer {
             }
         }
 
-        this.subAnalyzers = subAnalyzers.toArray(new Analyzer[subAnalyzers.size()]);
+        this.analyzer = new org.apache.lucene.analysis.ComboAnalyzer(Lucene.VERSION, subAnalyzers.toArray(new Analyzer[subAnalyzers.size()]));
+    }
+
+    /*
+     * Delegations
+    */
+
+    @Override
+    public TokenStream reusableTokenStream(String fieldName, Reader reader) throws IOException {
+        if (analyzer == null) init();
+        return this.analyzer.reusableTokenStream(fieldName, reader);
+    }
+
+    @Override
+    public int getPositionIncrementGap(String fieldName) {
+        if (analyzer == null) init();
+        return this.analyzer.getPositionIncrementGap(fieldName);
+    }
+
+    @Override
+    public int getOffsetGap(Fieldable field) {
+        if (analyzer == null) init();
+        return this.analyzer.getOffsetGap(field);
     }
 
     @Override public void close() {
+        if (analyzer != null) this.analyzer.close();
         super.close();
-        lastTokenStreams.close();
-        tempTokenStreams.close();
-        lastComboTokenStream.close();
     }
+
 }

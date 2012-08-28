@@ -19,7 +19,9 @@
 
 package org.elasticsearch.common.io;
 
-import javax.io.ReaderCloner;
+import org.apache.lucene.util.ReaderCloneFactory;
+
+import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Field;
 
@@ -37,7 +39,7 @@ import java.lang.reflect.Field;
  *
  * @author ofavre
  */
-public class FastCharArrayReaderCloner implements ReaderCloner {
+public class FastCharArrayReaderCloner implements ReaderCloneFactory.ReaderCloner<FastCharArrayReader> {
 
     private static Field internalField;
 
@@ -53,9 +55,10 @@ public class FastCharArrayReaderCloner implements ReaderCloner {
         }
     }
 
-    public FastCharArrayReaderCloner(FastCharArrayReader original) throws IllegalArgumentException {
+    @Override
+    public void init(FastCharArrayReader originalReader) throws IOException {
         try {
-            this.original = original;
+            this.original = originalReader;
             this.originalContent = (char[]) internalField.get(original);
         } catch (Exception ex) {
             throw new IllegalArgumentException("Could not access private \"buf\" field of the given FastCharArrayReader (actual class: "+original.getClass().getCanonicalName()+")", ex);

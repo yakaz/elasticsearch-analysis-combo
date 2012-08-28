@@ -20,6 +20,9 @@
 // Using javax instead of java because of JVM security measures!
 package javax.io;
 
+import org.apache.lucene.util.ReaderCloneFactory;
+
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Field;
@@ -38,7 +41,7 @@ import java.lang.reflect.Field;
  *
  * @author ofavre
  */
-public class StringReaderCloner implements ReaderCloner {
+public class StringReaderCloner implements ReaderCloneFactory.ReaderCloner<StringReader> {
 
     private static Field internalField;
 
@@ -54,9 +57,10 @@ public class StringReaderCloner implements ReaderCloner {
         }
     }
 
-    public StringReaderCloner(StringReader original) throws IllegalArgumentException {
+    public void init(StringReader originalReader) throws IOException {
+        this.originalContent = null;
         try {
-            this.original = original;
+            this.original = originalReader;
             this.originalContent = (String) internalField.get(original);
         } catch (Exception ex) {
             throw new IllegalArgumentException("Could not access private \"str\" field of the given StringReader (actual class: "+original.getClass().getCanonicalName()+")", ex);
@@ -74,5 +78,5 @@ public class StringReaderCloner implements ReaderCloner {
         }
         return new StringReader(originalContent);
     }
-    
+
 }

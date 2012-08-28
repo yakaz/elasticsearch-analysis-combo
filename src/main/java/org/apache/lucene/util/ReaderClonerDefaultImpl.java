@@ -18,15 +18,16 @@
  */
 
 // Using javax instead of java because of JVM security measures!
-package javax.io;
+package org.apache.lucene.util;
 
 import org.elasticsearch.common.io.FastStringReader;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 
 /**
- * Default, memory costly but generic implementation of a {@link Reader} duplicator.
+ * Default, memory costly but generic implementation of a {@link java.io.Reader} duplicator.
  *
  * This implementation makes no assumption on the initial Reader.
  * Therefore, only the read() functions are available to figure out
@@ -41,19 +42,22 @@ import java.io.Reader;
  *
  * @author ofavre
  */
-public class ReaderClonerDefaultImpl implements ReaderCloner {
+public class ReaderClonerDefaultImpl implements ReaderCloneFactory.ReaderCloner<Reader> {
 
     public static final int DEFAULT_INITIAL_CAPACITY = 64 * 1024;
     public static final int DEFAULT_READ_BUFFER_SIZE = 16 * 1024;
 
+    protected int initialCapacity;
+    protected int readBufferSize;
+
     private String originalContent;
 
-    public ReaderClonerDefaultImpl(Reader original) throws IOException {
-        this(original, DEFAULT_INITIAL_CAPACITY, DEFAULT_READ_BUFFER_SIZE);
+    public ReaderClonerDefaultImpl() {
+        this(DEFAULT_INITIAL_CAPACITY, DEFAULT_READ_BUFFER_SIZE);
     }
 
-    public ReaderClonerDefaultImpl(Reader original, int initialCapacity) throws IOException {
-        this(original, initialCapacity, DEFAULT_READ_BUFFER_SIZE);
+    public ReaderClonerDefaultImpl(int initialCapacity) {
+        this(initialCapacity, DEFAULT_READ_BUFFER_SIZE);
     }
 
     /**
@@ -61,12 +65,17 @@ public class ReaderClonerDefaultImpl implements ReaderCloner {
      * by repeatedly calling {@link Reader.read(char[])} on it,
      * feeding a {@link StringBuilder}.
      *
-     * @param original          Initial Reader to be duplicated
      * @param initialCapacity   Initial StringBuilder capacity
      * @param readBufferSize    Size of the char[] read buffer at each read() call
      * @throws IOException
      */
-    public ReaderClonerDefaultImpl(Reader original, int initialCapacity, int readBufferSize) throws IOException {
+    public ReaderClonerDefaultImpl(int initialCapacity, int readBufferSize) {
+        this.initialCapacity = initialCapacity;
+        this.readBufferSize = readBufferSize;
+    }
+
+    public void init(Reader originalReader) throws IOException {
+        this.originalContent = null;
         StringBuilder sb = null;
         if (initialCapacity < 0)
             sb = new StringBuilder();
@@ -74,19 +83,20 @@ public class ReaderClonerDefaultImpl implements ReaderCloner {
             sb = new StringBuilder(initialCapacity);
         char[] buffer = new char[readBufferSize];
         int read = -1;
-        while((read = original.read(buffer)) != -1){
+        while((read = originalReader.read(buffer)) != -1){
             sb.append(buffer, 0, read);
         }
         this.originalContent = sb.toString();
+        originalReader.close();
     }
 
     /**
-     * Returns a new {@link FastStringReader} instance,
+     * Returns a new {@link StringReader} instance,
      * directly based on the extracted original content.
-     * @return A {@link FastStringReader}
+     * @return A {@link StringReader}
      */
     @Override public Reader giveAClone() {
-        return new FastStringReader(originalContent);
+        return new StringReader(originalContent);
     }
 
 }
