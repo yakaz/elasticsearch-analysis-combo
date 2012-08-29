@@ -23,8 +23,6 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.io.StringReader;
 
-import static org.hamcrest.CoreMatchers.is;
-
 /**
  * Testcase for {@link ComboAnalyzer}
  */

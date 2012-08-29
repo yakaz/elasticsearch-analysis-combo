@@ -21,7 +21,6 @@ package org.apache.lucene.index;
 
 import org.apache.lucene.util.ReaderCloneFactory;
 
-import javax.io.ReaderCloner;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;

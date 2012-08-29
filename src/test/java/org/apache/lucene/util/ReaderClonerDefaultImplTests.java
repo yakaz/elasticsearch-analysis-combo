@@ -1,6 +1,5 @@
 package org.apache.lucene.util;
 
-import org.apache.lucene.util.ReaderClonerDefaultImpl;
 import org.testng.annotations.Test;
 
 import javax.util.ReaderContent;
@@ -8,9 +7,9 @@ import java.io.Reader;
 import java.io.StringReader;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.equalTo;
 
 /**
  * @author ofavre

@@ -6,9 +6,9 @@ import javax.util.ReaderContent;
 import java.io.Reader;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.equalTo;
 
 /**
  * @author ofavre

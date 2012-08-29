@@ -19,7 +19,6 @@ package org.apache.lucene.index;
 
 import org.apache.lucene.analysis.BaseTokenStreamTestCase;
 import org.apache.lucene.util.ReaderCloneFactory;
-import org.apache.lucene.util.TestReaderCloneFactory;
 import org.testng.annotations.Test;
 
 import java.io.IOException;

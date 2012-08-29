@@ -20,8 +20,6 @@
 // Using javax instead of java because of JVM security measures!
 package org.apache.lucene.util;
 
-import org.elasticsearch.common.io.FastStringReader;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
