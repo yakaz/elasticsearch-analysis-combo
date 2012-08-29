@@ -1,15 +1,31 @@
 Elasticsearch Combo Analyzer
 ============================
 
-This analyzer combines multiple analyzers into one.
+The Combo Analyzer plugin provides with a new analyzer type that combines the output of multiple analyzers into one.
 
 Installation
 -----------
 
-	bin/plugin -install yakaz/elasticsearch-analysis-combo/1.0.1
+Simply run at the root of your ElasticSearch installation:
 
-Introduction
-------------
+	bin/plugin -install yakaz/elasticsearch-analysis-combo/1.1.0
+
+Version matrix:
+
+    -------------------------------------------------
+    | HashSplitter Analysis Plugin | ElasticSearch  |
+    -------------------------------------------------
+    | master                       | 0.19 -> master |
+    -------------------------------------------------
+    | 1.1.0                        | 0.19 -> master |
+    -------------------------------------------------
+    | 1.0.1                        | 0.19 -> master |
+    -------------------------------------------------
+    | 1.0.0                        | 0.19 -> master |
+    -------------------------------------------------
+
+Description
+-----------
 
 If you have a multilingual index, where each document has its source language, you can analyze the text fields using an analyzer based on the detected language. 
 But what if you can't detect the language, the language detected was wrong, or aggressive stemming deforms the indexed terms? Or if you want to use other language-specific analyzers at search time, but still like to search original word forms indexed in another language?

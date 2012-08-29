@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.elasticsearch</groupId>
     <artifactId>elasticsearch-analysis-combo</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
     <description>ElasticSearch Combo Analyzer Plugin</description>
     <inceptionYear>2011</inceptionYear>
@@ -49,6 +49,7 @@
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-test-framework</artifactId>
             <version>${lucene.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
