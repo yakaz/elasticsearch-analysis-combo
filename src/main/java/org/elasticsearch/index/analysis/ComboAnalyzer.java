@@ -96,6 +96,14 @@ public class ComboAnalyzer extends Analyzer {
         }
 
         this.analyzer = new org.apache.lucene.analysis.ComboAnalyzer(Lucene.VERSION, subAnalyzers.toArray(new Analyzer[subAnalyzers.size()]));
+
+        Boolean tokenstreamReuse = settings.getAsBoolean("tokenstream_reuse", null);
+        if (tokenstreamReuse != null)
+            this.analyzer.setTokenStreamReuseEnabled(tokenstreamReuse);
+
+        Boolean tokenstreamCaching = settings.getAsBoolean("tokenstream_caching", null);
+        if (tokenstreamCaching != null)
+            this.analyzer.setTokenStreamCachingEnabled(tokenstreamCaching);
     }
 
     /*

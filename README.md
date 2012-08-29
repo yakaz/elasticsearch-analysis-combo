@@ -1,7 +1,7 @@
 Elasticsearch Combo Analyzer
-----------------------------
+============================
 
-This analyzer combines multiple analyzers into one and is based on the work of Olivier Favre.
+This analyzer combines multiple analyzers into one.
 
 Installation
 -----------
@@ -16,7 +16,17 @@ But what if you can't detect the language, the language detected was wrong, or a
 
 In such cases, it helps to have the original words together with the stemmed words in the index.
 
-The method is to configure an analyzer with type `combo` and a list of `sub_analyzers`, like shown below.
+The proposed solution merges the terms received from multiple analyzers. It is called the `ComboAnalyzer`.
+
+Configuration
+-------------
+
+The plugin provides you with the `combo` analyzer type.
+It expects a list of other analyzers to be used, under the `sub_analyzers` property.
+
+It is good practice to use the combo analyzer for both index and search.
+
+### Example
 
 For example, you want to index German text together with other multilingual text in one field. A `combo` setup could look like
 
@@ -107,12 +117,43 @@ The result can be checked with the Analyze API of Elasticsearch.
 	  } ]
 	}
 
-Some tokens may repeat, the offsets and positions may have same values. This should have minimal impact on indexing or relevance scoring. An improvement would be to get rid of the duplicates, but the Lucene token stream API is rather awkward right now, making it hard to run many analyzers over the input again and again. Behind the scenes, the token reader must be cloned. Hopefully this changes with a later Lucene version.
+Some tokens may repeat, the offsets and positions may have same values.
+This should have minimal impact on indexing or relevance scoring. Note that it may even improve scoring, because of the reweighting implied by more matches on some words.
 
-It is good practice to use the combo analyzer against index and also against search.
+Behind the scene
+----------------
 
+An improvement would be to get rid of the duplicates, but the analyzers may output different offsets, types and position, for the same token text.
 
-See also 
+Lucene TokenStream API is rather awkward right now, making it hard to run many analyzers over the input again and again.
+Behind the scenes, the `Reader` given to the `Analyzer` must be cloned, in order to feed all the sub-analyzers.
+Hopefully it may get easier to get multiple `Reader` in upcoming Lucene versions.
+
+Pitfalls
+--------
+
+There have been reported problems with using multiple time the same `Analyzer` instance.
+You can recognize such problem by noticing dropped tokens, and a final empty token.
+Test the analysis with a simple word that should neither be tokenized, nor stemmed nor removed,
+you should see it in the output as many times as you have sub-analyzers,
+and you should not see any other tokens.
+
+While this can be detected if it happens inside the same `ComboAnalyzer`, some problem can still arise in an awkward environment
+(like cascading combo analyzers, sharing some `Analyzer` instances, or re-using an `Analyzer` while consuming the `ComboTokenStream`).
+
+There are two possible fixes to remedy this problem:
+* Disable completely the `TokenStream` reuse. Calls `Analyzer.tokenStream()` instead of `Analyzer.reusableTokenStream()`.
+  Set the `tokenstream_reuse` property to `false` to use this solution.
+* Activate use of token caching. All gotten `TokenStream`s will be completely consumed and cached right after its creation.
+  This loads the information in memory, and may be unsuitable for very long documents.
+  Set the `tokenstream_caching` property to `true` to use this solution.
+
+Both solution affect memory usage and garbage collection a bit, thus affecting performance a bit too.
+If you experience no problem with your setup, keep the defaults!
+There should be no particular reason to use both these options simultaneously.
+
+See also
+--------
 
 https://github.com/elasticsearch/elasticsearch/issues/1128
 

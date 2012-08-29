@@ -57,4 +57,75 @@ public class TestComboAnalyzer extends BaseTokenStreamTestCase {
                     new int[]{ 1,  0,  0,  1,  1,  0,  1,  0,  1,  0});
     }
 
+    @Test
+    public void testTwiceTheSameAnalyzerInstance() throws IOException {
+        Analyzer analyzer = new WhitespaceAnalyzer(TEST_VERSION_CURRENT);
+        ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT,
+                analyzer,
+                analyzer
+        );
+        for (int i = 0 ; i < 3 ; i++)
+            assertTokenStreamContents(cb.reusableTokenStream("field", new StringReader("just a little test "+i)),
+                    new String[]{"just", "just", "a", "a", "little", "little", "test", "test", Integer.toString(i), Integer.toString(i)},
+                    new int[]{ 0,  0,  5,  5,  7,  7, 14, 14, 19, 19},
+                    new int[]{ 4,  4,  6,  6, 13, 13, 18, 18, 20, 20},
+                    new int[]{ 1,  0,  1,  0,  1,  0,  1,  0,  1,  0});
+    }
+
+    @Test
+    public void testCascadeCombo() throws IOException {
+        ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT,
+                new ComboAnalyzer(TEST_VERSION_CURRENT,
+                        new WhitespaceAnalyzer(TEST_VERSION_CURRENT),
+                        new KeywordAnalyzer()
+                ),
+                new StandardAnalyzer(TEST_VERSION_CURRENT),
+                new KeywordAnalyzer()
+        );
+        for (int i = 0 ; i < 3 ; i++)
+            assertTokenStreamContents(cb.reusableTokenStream("field", new StringReader("just a little test "+i)),
+                    new String[]{"just", "just", "just a little test "+i, "just a little test "+i, "a", "little", "little", "test", "test", Integer.toString(i), Integer.toString(i)},
+                    new int[]{ 0,  0,  0,  0,  5,  7,  7, 14, 14, 19, 19},
+                    new int[]{ 4,  4, 20, 20,  6, 13, 13, 18, 18, 20, 20},
+                    new int[]{ 1,  0,  0,  0,  1,  1,  0,  1,  0,  1,  0});
+    }
+
+    @Test
+    public void testCascadeComboTwiceSameInstanceSolvedByDisabledReuse() throws IOException {
+        Analyzer analyzer = new KeywordAnalyzer();
+        ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT,
+                new ComboAnalyzer(TEST_VERSION_CURRENT,
+                        new WhitespaceAnalyzer(TEST_VERSION_CURRENT),
+                        analyzer
+                ).disableTokenStreamReuse(),
+                new StandardAnalyzer(TEST_VERSION_CURRENT),
+                analyzer
+        ).disableTokenStreamReuse();
+        for (int i = 0 ; i < 3 ; i++)
+            assertTokenStreamContents(cb.reusableTokenStream("field", new StringReader("just a little test "+i)),
+                    new String[]{"just", "just", "just a little test "+i, "just a little test "+i, "a", "little", "little", "test", "test", Integer.toString(i), Integer.toString(i)},
+                    new int[]{ 0,  0,  0,  0,  5,  7,  7, 14, 14, 19, 19},
+                    new int[]{ 4,  4, 20, 20,  6, 13, 13, 18, 18, 20, 20},
+                    new int[]{ 1,  0,  0,  0,  1,  1,  0,  1,  0,  1,  0});
+    }
+
+    @Test
+    public void testCascadeComboTwiceSameInstanceSolvedByCaching() throws IOException {
+        Analyzer analyzer = new KeywordAnalyzer();
+        ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT,
+                new ComboAnalyzer(TEST_VERSION_CURRENT,
+                        new WhitespaceAnalyzer(TEST_VERSION_CURRENT),
+                        analyzer
+                ).enableTokenStreamCaching(),
+                new StandardAnalyzer(TEST_VERSION_CURRENT),
+                analyzer
+        ).enableTokenStreamCaching();
+        for (int i = 0 ; i < 3 ; i++)
+            assertTokenStreamContents(cb.reusableTokenStream("field", new StringReader("just a little test "+i)),
+                    new String[]{"just", "just", "just a little test "+i, "just a little test "+i, "a", "little", "little", "test", "test", Integer.toString(i), Integer.toString(i)},
+                    new int[]{ 0,  0,  0,  0,  5,  7,  7, 14, 14, 19, 19},
+                    new int[]{ 4,  4, 20, 20,  6, 13, 13, 18, 18, 20, 20},
+                    new int[]{ 1,  0,  0,  0,  1,  1,  0,  1,  0,  1,  0});
+    }
+
 }
