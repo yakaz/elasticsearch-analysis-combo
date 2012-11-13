@@ -8,7 +8,7 @@ Installation
 
 Simply run at the root of your ElasticSearch installation:
 
-	bin/plugin -install yakaz/elasticsearch-analysis-combo/1.1.0
+	bin/plugin -install yakaz/elasticsearch-analysis-combo/1.2.0
 
 Version matrix:
 
