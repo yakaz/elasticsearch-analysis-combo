@@ -160,7 +160,7 @@ public class TestReaderCloneFactory extends LuceneTestCase {
         FilterReader reader = new PushbackReader(stringReader);
         ReaderCloneFactory.ReaderCloner<Reader> cloner = ReaderCloneFactory.getCloner(reader);
         assertNotNull(cloner);
-        assertEquals(cloner.getClass().getName(), StringReaderCloner.class.getName());
+        assertEquals(cloner.getClass(), StringReaderCloner.class);
         Reader clone;
         clone = cloner.giveAClone();
         assertReaderContent(clone, "test string");
