@@ -56,6 +56,22 @@ public class TestComboAnalyzer extends BaseTokenStreamTestCase {
     }
 
     @Test
+    public void testMultipleAnalyzersDeduplication() throws IOException {
+        ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT,
+                new WhitespaceAnalyzer(TEST_VERSION_CURRENT),
+                new StandardAnalyzer(TEST_VERSION_CURRENT),
+                new KeywordAnalyzer()
+        );
+        cb.enableDeduplication();
+        for (int i = 0 ; i < 3 ; i++)
+            assertTokenStreamContents(cb.reusableTokenStream("field", new StringReader("just a little test "+i)),
+                    new String[]{"just", "just a little test "+i, "a", "little", "test", Integer.toString(i)},
+                    new int[]{ 0,   0,  5,  7, 14, 19},
+                    new int[]{ 4,  20,  6, 13, 18, 20},
+                    new int[]{ 1,   0,  1,  1,  1,  1});
+    }
+
+    @Test
     public void testTwiceTheSameAnalyzerInstance() throws IOException {
         Analyzer analyzer = new WhitespaceAnalyzer(TEST_VERSION_CURRENT);
         ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT,

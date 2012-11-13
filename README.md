@@ -12,17 +12,19 @@ Simply run at the root of your ElasticSearch installation:
 
 Version matrix:
 
-    -------------------------------------------------
-    | HashSplitter Analysis Plugin | ElasticSearch  |
-    -------------------------------------------------
-    | master                       | 0.19 -> master |
-    -------------------------------------------------
-    | 1.1.0                        | 0.19 -> master |
-    -------------------------------------------------
-    | 1.0.1                        | 0.19 -> master |
-    -------------------------------------------------
-    | 1.0.0                        | 0.19 -> master |
-    -------------------------------------------------
+    ----------------------------------------------------
+    | HashSplitter Analysis Plugin | ElasticSearch     |
+    ----------------------------------------------------
+    | master                       | 0.19.11 -> master |
+    ----------------------------------------------------
+    | 1.2.0                        | 0.19.11 -> master |
+    ----------------------------------------------------
+    | 1.1.0                        | 0.19.0 -> master  |
+    ----------------------------------------------------
+    | 1.0.1                        | 0.19.0 -> master  |
+    ----------------------------------------------------
+    | 1.0.0                        | 0.19.0 -> master  |
+    ----------------------------------------------------
 
 Description
 -----------
@@ -39,6 +41,7 @@ Configuration
 
 The plugin provides you with the `combo` analyzer type.
 It expects a list of other analyzers to be used, under the `sub_analyzers` property.
+You can remove duplicated tokens sharing the same position by setting `true` for the `deduplication` property.
 
 It is good practice to use the combo analyzer for both index and search.
 

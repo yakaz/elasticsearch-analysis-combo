@@ -39,7 +39,7 @@ import java.util.ArrayList;
  *
  * @author ofavre
  */
-public class ComboAnalyzer extends Analyzer {
+public final class ComboAnalyzer extends Analyzer {
 
     public static final String NAME = "combo";
 
@@ -104,6 +104,10 @@ public class ComboAnalyzer extends Analyzer {
         Boolean tokenstreamCaching = settings.getAsBoolean("tokenstream_caching", null);
         if (tokenstreamCaching != null)
             this.analyzer.setTokenStreamCachingEnabled(tokenstreamCaching);
+
+        Boolean deduplication = settings.getAsBoolean("deduplication", null);
+        if (deduplication != null)
+            this.analyzer.setDeduplicationEnabled(deduplication);
     }
 
     /*

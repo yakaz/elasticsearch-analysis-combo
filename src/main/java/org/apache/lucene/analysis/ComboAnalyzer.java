@@ -17,6 +17,7 @@ package org.apache.lucene.analysis;
  * limitations under the License.
  */
 
+import org.apache.lucene.analysis.miscellaneous.RemoveDuplicatesTokenFilter;
 import org.apache.lucene.util.CloseableThreadLocal;
 import org.apache.lucene.util.ReaderCloneFactory;
 import org.apache.lucene.util.Version;
@@ -55,6 +56,10 @@ public class ComboAnalyzer extends Analyzer {
      * Default value for the enabled state of {@link TokenStream} caching.
      */
     public static final boolean TOKENSTREAM_CACHING_ENABLED_DEFAULT = false;
+    /**
+     * Default value for the enabled state of token deduplication.
+     */
+    public static final boolean DEDUPLICATION_ENABLED_DEFAULT = false;
 
     private Analyzer[] subAnalyzers;
 
@@ -64,9 +69,11 @@ public class ComboAnalyzer extends Analyzer {
 
     private boolean cacheTokenStreams = TOKENSTREAM_CACHING_ENABLED_DEFAULT;
 
+    private boolean deduplication = DEDUPLICATION_ENABLED_DEFAULT;
+
     private CloseableThreadLocal<TokenStream[]> lastTokenStreams = new CloseableThreadLocal<TokenStream[]>();
     private CloseableThreadLocal<TokenStream[]> tempTokenStreams = new CloseableThreadLocal<TokenStream[]>();
-    private CloseableThreadLocal<ComboTokenStream> lastComboTokenStream = new CloseableThreadLocal<ComboTokenStream>();
+    private CloseableThreadLocal<TokenStream> lastComboTokenStream = new CloseableThreadLocal<TokenStream>();
 
     public ComboAnalyzer(Version version, Analyzer... subAnalyzers) {
         this.subAnalyzers = subAnalyzers;
@@ -173,6 +180,42 @@ public class ComboAnalyzer extends Analyzer {
         return this;
     }
 
+    /**
+     * Enable or disable deduplication of repeated tokens at the same position.
+     *
+     * @param value {@code true} to enable the deduplication of tokens,
+     *              {@code false} to disable it.
+     *
+     * @return This instance, for chainable construction.
+     *
+     * @see ComboAnalyzer.DEDUPLICATION_ENABLED_DEFAULT
+     */
+    public ComboAnalyzer setDeduplicationEnabled(boolean value) {
+        deduplication = value;
+        return this;
+    }
+
+    /**
+     * Enable the systematic caching of {@link Analyzer} {@link TokenStream}s.
+     * @return This instance, for chainable construction.
+     * @see ComboAnalyzer.setDeduplicationEnabled(boolean)
+     */
+    public ComboAnalyzer enableDeduplication() {
+        deduplication = true;
+        return this;
+    }
+
+    /**
+     * Disable the systematic caching of {@link Analyzer} {@link TokenStream}s.
+     * @return This instance, for chainable construction.
+     * @see ComboAnalyzer.setDeduplicationEnabled(boolean)
+     */
+    public ComboAnalyzer disableDeduplication() {
+        deduplication = false;
+        return this;
+    }
+
+
     @Override public final TokenStream tokenStream(String fieldName, Reader originalReader) {
         // Duplication of the original reader, to feed all sub-analyzers
         ReaderCloneFactory.ReaderCloner readerCloner = null;
@@ -211,7 +254,7 @@ public class ComboAnalyzer extends Analyzer {
         if (lastTokenStreams.get() == null) lastTokenStreams.set(new TokenStream[subAnalyzers.length]); // only at first run
         TokenStream[] tempTokenStreams_local = tempTokenStreams.get();
         TokenStream[] lastTokenStreams_local = lastTokenStreams.get();
-        ComboTokenStream lastComboTokenStream_local = lastComboTokenStream.get();
+        TokenStream lastComboTokenStream_local = lastComboTokenStream.get();
 
         // Get sub-TokenStreams from sub-analyzers
         Set<Analyzer> unusedDuplicated = hasDuplicatedAnalyzers ? new HashSet<Analyzer>(duplicatedAnalyzers) : null;
@@ -272,6 +315,8 @@ public class ComboAnalyzer extends Analyzer {
             tempTokenStreams.set(lastTokenStreams_local);
             // New ComboTokenStream to use
             lastComboTokenStream_local = new ComboTokenStream(tempTokenStreams_local);
+            if (deduplication)
+                lastComboTokenStream_local = new RemoveDuplicatesTokenFilter(lastComboTokenStream_local);
             lastComboTokenStream.set(lastComboTokenStream_local);
         }
         return lastComboTokenStream_local;
