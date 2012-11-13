@@ -39,7 +39,7 @@ import java.util.ArrayList;
  *
  * @author ofavre
  */
-public class ComboAnalyzer extends Analyzer {
+public final class ComboAnalyzer extends Analyzer {
 
     public static final String NAME = "combo";
 

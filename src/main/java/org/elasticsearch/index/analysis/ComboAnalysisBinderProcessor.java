@@ -27,5 +27,9 @@ public class ComboAnalysisBinderProcessor extends AnalysisModule.AnalysisBinderP
     @Override public void processAnalyzers(AnalyzersBindings analyzersBindings) {
         analyzersBindings.processAnalyzer(ComboAnalyzer.NAME, ComboAnalyzerProvider.class);
     }
-
+    
+    @Override
+    public void processTokenFilters(TokenFiltersBindings tokenFiltersBindings) {
+        tokenFiltersBindings.processTokenFilter("removedups", RemoveDuplicatesTokenFilterFactory.class);
+    }
 }
