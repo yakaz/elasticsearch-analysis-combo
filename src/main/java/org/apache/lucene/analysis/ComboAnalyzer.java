@@ -17,7 +17,7 @@ package org.apache.lucene.analysis;
  * limitations under the License.
  */
 
-import org.apache.lucene.analysis.miscellaneous.RemoveDuplicatesTokenFilter;
+import org.apache.lucene.analysis.miscellaneous.UniqueTokenFilter;
 import org.apache.lucene.util.CloseableThreadLocal;
 import org.apache.lucene.util.ReaderCloneFactory;
 import org.apache.lucene.util.Version;
@@ -316,7 +316,7 @@ public class ComboAnalyzer extends Analyzer {
             // New ComboTokenStream to use
             lastComboTokenStream_local = new ComboTokenStream(tempTokenStreams_local);
             if (deduplication)
-                lastComboTokenStream_local = new RemoveDuplicatesTokenFilter(lastComboTokenStream_local);
+                lastComboTokenStream_local = new UniqueTokenFilter(lastComboTokenStream_local, true);
             lastComboTokenStream.set(lastComboTokenStream_local);
         }
         return lastComboTokenStream_local;
