@@ -39,8 +39,8 @@ The proposed solution merges the terms received from multiple analyzers. It is c
 Configuration
 -------------
 
-The plugin provides you with the `combo` analyzer type.
-It expects a list of other analyzers to be used, under the `sub_analyzers` property.
+The plugin provides you with the `combo` analyzer type.  
+It expects a list of other analyzers to be used, under the `sub_analyzers` property.  
 You can remove duplicated tokens sharing the same position by setting `true` for the `deduplication` property.
 
 It is good practice to use the combo analyzer for both index and search.
@@ -141,8 +141,6 @@ This should have minimal impact on indexing or relevance scoring. Note that it m
 
 Behind the scene
 ----------------
-
-An improvement would be to get rid of the duplicates, but the analyzers may output different offsets, types and position, for the same token text.
 
 Lucene TokenStream API is rather awkward right now, making it hard to run many analyzers over the input again and again.
 Behind the scenes, the `Reader` given to the `Analyzer` must be cloned, in order to feed all the sub-analyzers.
