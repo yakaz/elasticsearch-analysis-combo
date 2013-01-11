@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <name>Elasticsearch Combo Analyzer plugin</name>
+    <name>elasticsearch-analysis-combo</name>
     <description>The Combo Analyzer plugin for ElasticSearch provides with a new analyzer type that combines the output of multiple analyzers into one.</description>
     <url>http://github.com/yakaz/elasticsearch-analysis-combo</url>
     <modelVersion>4.0.0</modelVersion>
