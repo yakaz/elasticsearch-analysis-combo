@@ -2,13 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <name>elasticsearch-analysis-combo</name>
+    <name>Elasticsearch Combo Analyzer plugin</name>
+    <description>The Combo Analyzer plugin for ElasticSearch provides with a new analyzer type that combines the output of multiple analyzers into one.</description>
+    <url>http://github.com/yakaz/elasticsearch-analysis-combo</url>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.elasticsearch</groupId>
+    <groupId>com.yakaz.elasticsearch.plugins</groupId>
     <artifactId>elasticsearch-analysis-combo</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <description>ElasticSearch Combo Analyzer Plugin</description>
     <inceptionYear>2011</inceptionYear>
     <licenses>
         <license>
@@ -20,8 +21,16 @@
     <scm>
         <connection>scm:git:git@github.com:yakaz/elasticsearch-analysis-combo.git</connection>
         <developerConnection>scm:git:git@github.com:yakaz/elasticsearch-analysis-combo.git</developerConnection>
-        <url>http://github.com/yakaz/elasticsearch-analysis-combo</url>
+        <url>git@github.com:yakaz/elasticsearch-analysis-combo.git</url>
     </scm>
+    <developers>
+        <developer>
+            <id>ofavre</id>
+            <name>Olivier Favre</name>
+            <email>http://www.google.com/recaptcha/mailhide/d?k=01BFRL3yhSOUyxYhgio4AZrQ==&amp;c=MG8swJyru2wFd6B6QWz--HIx_5O38r35CjjdTzn025Q=</email>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
 
     <parent>
         <groupId>org.sonatype.oss</groupId>
@@ -33,9 +42,6 @@
         <elasticsearch.version>0.19.0</elasticsearch.version>
         <lucene.version>3.5.0</lucene.version>
     </properties>
-
-    <repositories>
-    </repositories>
 
     <dependencies>
         <dependency>
@@ -151,5 +157,34 @@
             </plugin>
         </plugins>
     </reporting>
+
+    <profiles>
+        <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
