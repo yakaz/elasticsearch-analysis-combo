@@ -17,29 +17,26 @@
  * under the License.
  */
 
-package org.elasticsearch.index.analysis;
+package org.apache.lucene.analysis;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.util.Version;
 import org.elasticsearch.ElasticSearchIllegalArgumentException;
 import org.elasticsearch.common.inject.Injector;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
-import org.elasticsearch.common.lucene.Lucene;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.index.analysis.AnalysisService;
+import org.elasticsearch.index.analysis.NamedAnalyzer;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 
 /**
- * ElasticSearch ComboAnalyzer wrapper over Lucene ComboAnalyzer.
+ * ElasticSearch ComboAnalyzerWrapper wrapper over Lucene ComboAnalyzerWrapper.
  *
  * @author ofavre
  */
-public final class ComboAnalyzer extends Analyzer {
+public final class ComboAnalyzerWrapper extends Analyzer {
 
     public static final String NAME = "combo";
 
@@ -52,8 +49,8 @@ public final class ComboAnalyzer extends Analyzer {
 
     private org.apache.lucene.analysis.ComboAnalyzer analyzer;
 
-    public ComboAnalyzer(Version version, String name, Settings settings, Injector injector) {
-        logger = ESLoggerFactory.getLogger(ComboAnalyzer.NAME+">"+name);
+    public ComboAnalyzerWrapper(Version version, String name, Settings settings, Injector injector) {
+        logger = ESLoggerFactory.getLogger(NAME+">"+name);
 
         this.name = name;
 
@@ -64,12 +61,6 @@ public final class ComboAnalyzer extends Analyzer {
         this.version = version;
 
         this.analyzer = null; // must be lazy initialized to get free of the cyclic dependency on AnalysisService
-    }
-
-    @Override public TokenStream tokenStream(String fieldName, Reader originalReader) {
-        if (analyzer == null) init();
-
-        return analyzer.tokenStream(fieldName, originalReader);
     }
 
     /**
@@ -83,7 +74,7 @@ public final class ComboAnalyzer extends Analyzer {
         String[] sub = settings.getAsArray("sub_analyzers");
         ArrayList<Analyzer> subAnalyzers = new ArrayList<Analyzer>();
         if (sub == null) {
-            throw new ElasticSearchIllegalArgumentException("\""+NAME+"\" analyzers must have a \"sub_analyzers\" list property");
+            throw new ElasticSearchIllegalArgumentException("Analyzer ["+name+"] analyzer of type ["+NAME+"], must have a \"sub_analyzers\" list property");
         }
 
         for (String subname : sub) {
@@ -95,11 +86,7 @@ public final class ComboAnalyzer extends Analyzer {
             }
         }
 
-        this.analyzer = new org.apache.lucene.analysis.ComboAnalyzer(Lucene.VERSION, subAnalyzers.toArray(new Analyzer[subAnalyzers.size()]));
-
-        Boolean tokenstreamReuse = settings.getAsBoolean("tokenstream_reuse", null);
-        if (tokenstreamReuse != null)
-            this.analyzer.setTokenStreamReuseEnabled(tokenstreamReuse);
+        this.analyzer = new org.apache.lucene.analysis.ComboAnalyzer(version, subAnalyzers.toArray(new Analyzer[subAnalyzers.size()]));
 
         Boolean tokenstreamCaching = settings.getAsBoolean("tokenstream_caching", null);
         if (tokenstreamCaching != null)
@@ -110,26 +97,10 @@ public final class ComboAnalyzer extends Analyzer {
             this.analyzer.setDeduplicationEnabled(deduplication);
     }
 
-    /*
-     * Delegations
-    */
-
     @Override
-    public TokenStream reusableTokenStream(String fieldName, Reader reader) throws IOException {
+    protected TokenStreamComponents createComponents(String fieldName, Reader reader) {
         if (analyzer == null) init();
-        return this.analyzer.reusableTokenStream(fieldName, reader);
-    }
-
-    @Override
-    public int getPositionIncrementGap(String fieldName) {
-        if (analyzer == null) init();
-        return this.analyzer.getPositionIncrementGap(fieldName);
-    }
-
-    @Override
-    public int getOffsetGap(Fieldable field) {
-        if (analyzer == null) init();
-        return this.analyzer.getOffsetGap(field);
+        return this.analyzer.createComponents(fieldName, reader);
     }
 
     @Override public void close() {

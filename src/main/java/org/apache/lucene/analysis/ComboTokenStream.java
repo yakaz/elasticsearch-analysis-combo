@@ -19,8 +19,6 @@ package org.apache.lucene.analysis;
 
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.util.Attribute;
-import org.apache.lucene.util.AttributeImpl;
-import org.apache.lucene.util.AttributeSource;
 
 import java.io.IOException;
 import java.util.AbstractQueue;
@@ -33,19 +31,13 @@ import java.util.PriorityQueue;
  * This class copies the attributes from the last sub-TokenStream that
  * was read from. If attributes are not uniform between sub-TokenStreams,
  * extraneous attributes will stay untouched.
- *
- * @remark Copying is the only solution since most caller call
- *         get/addAttribute once and keep on reading the same
- *         updated instance returned the first (and only) time.
- *         Fortunately, {@link AttributeImpl}s have a method
- *         for giving their values to another instance.
  */
 public class ComboTokenStream extends TokenStream {
 
     /**
      * Whether or not to continue with the current TokenStream
      * if it has multiple terms at same position, minimizing
-     * queue moves, or to enforce strip order (position, offsets)
+     * queue moves, or to enforce strict order (position, offsets)
      */
     static final boolean KEEP_STREAM_IF_SAME_POSITION = false;
 
@@ -66,7 +58,7 @@ public class ComboTokenStream extends TokenStream {
             // Add each and every token seen in the current sub AttributeSource
             Iterator<Class<? extends Attribute>> iterator = this.positionedTokenStreams[i].getAttributeClassesIterator();
             while (iterator.hasNext()) {
-                super.addAttribute(iterator.next());
+                addAttribute(iterator.next());
             }
         }
         this.lastPosition = 0;
@@ -78,10 +70,11 @@ public class ComboTokenStream extends TokenStream {
     }
 
     /*
-    * TokenStream multiplexed methods
-    */
+     * TokenStream multiplexed methods
+     */
 
-    @Override public final boolean incrementToken() throws IOException {
+    @Override
+    public final boolean incrementToken() throws IOException {
         clearAttributes();
 
         // Fill the queue on first call
@@ -109,21 +102,10 @@ public class ComboTokenStream extends TokenStream {
         // Look position to see if it will be increased, see usage a bit below
         int pos = toRead.getPosition();
 
-        // Copy the current token attributes from the sub-TokenStream
-        // to our AttributeSource (see class javadoc remark)
-        AttributeSource currentAttributeSource = toRead;
-        Iterator<Class<? extends Attribute>> iter = toRead.getAttributeClassesIterator();
-        while (iter.hasNext()) {
-            Class<? extends Attribute> clazz = iter.next();
-            @SuppressWarnings("unchecked") AttributeImpl attr = (AttributeImpl) currentAttributeSource.getAttribute(clazz); // forcefully an AttributeImpl, read Lucene source
-            if (this.hasAttribute(clazz)) {
-                @SuppressWarnings("unchecked") AttributeImpl attrLoc = (AttributeImpl) this.getAttribute(clazz);
-                attr.copyTo(attrLoc);
-            } // otherwise, leave untouched
-        }
+        // Copy the current token attributes from the sub-TokenStream to our AttributeSource
+        restoreState(toRead.captureState());
         // Override the PositionIncrementAttribute
-        this.getAttribute(PositionIncrementAttribute.class).setPositionIncrement(Math.max(0,pos - lastPosition));
-        lastPosition = pos;
+        this.getAttribute(PositionIncrementAttribute.class).setPositionIncrement(Math.max(0, pos - lastPosition));
 
         // Prepare next read
         // We did not remove the TokenStream from the queue yet,
@@ -140,6 +122,8 @@ public class ComboTokenStream extends TokenStream {
                 readQueue.add(readQueue.poll());
             }   // Otherwise, next call will continue with the same TokenStream (less queue movements)
         }
+
+        lastPosition = pos;
 
         return true;
     }
@@ -158,7 +142,7 @@ public class ComboTokenStream extends TokenStream {
 
     @Override public void reset() throws IOException {
         super.reset();
-        super.clearAttributes();
+        clearAttributes();
         lastPosition = 0;
         // Apply on each sub-TokenStream
         for (PositionedTokenStream pts : positionedTokenStreams) {

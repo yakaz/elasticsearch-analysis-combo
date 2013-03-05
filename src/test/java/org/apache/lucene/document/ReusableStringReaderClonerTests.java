@@ -1,4 +1,4 @@
-package org.apache.lucene.index;
+package org.apache.lucene.document;
 
 import org.testng.annotations.Test;
 
@@ -19,15 +19,15 @@ public class ReusableStringReaderClonerTests {
     @Test
     public void test() throws Exception {
         String content = "test\n";
-        ReusableStringReader reader = new ReusableStringReader();
-        reader.init(content);
+        Field.ReusableStringReader reader = new Field.ReusableStringReader();
+        reader.setValue(content);
         ReusableStringReaderCloner cloner = new ReusableStringReaderCloner();
         cloner.init(reader);
 
         Reader clone1 = cloner.giveAClone();
         // The original Reader can be returned with this implementation.
         // Check it actually is.
-        assertThat("returns original reader", clone1, is((Reader)reader));
+        assertThat("returns original reader", clone1, is((Reader) reader));
         assertThat("same content", ReaderContent.readWhole(clone1), equalTo(content));
         assertThat("empty after reading", clone1.read(), equalTo(-1));
 
@@ -40,22 +40,22 @@ public class ReusableStringReaderClonerTests {
     @Test
     public void testReuseAfterUse() throws Exception {
         String content = "test\n";
-        ReusableStringReader reader = new ReusableStringReader();
-        reader.init(content);
+        Field.ReusableStringReader reader = new Field.ReusableStringReader();
+        reader.setValue(content);
         ReusableStringReaderCloner cloner = new ReusableStringReaderCloner();
         cloner.init(reader);
 
         Reader clone1 = cloner.giveAClone();
         // The original Reader can be returned with this implementation.
         // Check it actually is.
-        assertThat("returns original reader", clone1, is((Reader)reader));
+        assertThat("returns original reader", clone1, is((Reader) reader));
         assertThat("same content", ReaderContent.readWhole(clone1), equalTo(content));
         assertThat("empty after reading", clone1.read(), equalTo(-1));
 
         // Now change the content!
         String otherContent = content + " CHANGED";
         assertThat("contents are not equal", otherContent, not(equalTo(content)));
-        reader.init(otherContent);
+        reader.setValue(otherContent);
 
         Reader clone2 = cloner.giveAClone();
         assertThat("do not return the previous clone", clone2, not(is(clone1)));
@@ -66,20 +66,20 @@ public class ReusableStringReaderClonerTests {
     @Test
     public void testReuseBeforeUse() throws Exception {
         String content = "test\n";
-        ReusableStringReader reader = new ReusableStringReader();
-        reader.init(content);
+        Field.ReusableStringReader reader = new Field.ReusableStringReader();
+        reader.setValue(content);
         ReusableStringReaderCloner cloner = new ReusableStringReaderCloner();
         cloner.init(reader);
 
         // Now change the content!
         String otherContent = content + " CHANGED";
         assertThat("contents are not equal", otherContent, not(equalTo(content)));
-        reader.init(otherContent);
+        reader.setValue(otherContent);
 
         Reader clone1 = cloner.giveAClone();
         // The original Reader can be returned with this implementation.
         // Check it actually is.
-        assertThat("returns original reader", clone1, is((Reader)reader));
+        assertThat("returns original reader", clone1, is((Reader) reader));
         assertThat("has the new content", ReaderContent.readWhole(clone1), equalTo(otherContent)); // alas, but desirable performance-wise
         assertThat("empty after reading", clone1.read(), equalTo(-1));
 

@@ -17,7 +17,7 @@ package org.apache.lucene.util;
  * limitations under the License.
  */
 
-import org.apache.lucene.index.ReusableStringReaderCloner;
+import org.apache.lucene.document.ReusableStringReaderCloner;
 
 import javax.io.StringReaderCloner;
 import java.io.BufferedReader;

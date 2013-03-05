@@ -1,4 +1,4 @@
-package org.apache.lucene.index;
+package org.apache.lucene.document;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -27,7 +27,7 @@ import java.io.Reader;
 import static javax.util.ReaderContent.assertReaderContent;
 
 /**
- * Testcase for {@link ReusableStringReaderCloner}
+ * Testcase for {@link org.apache.lucene.document.ReusableStringReaderCloner}
  */
 @Test
 public class TestReusableStringReaderCloner extends BaseTokenStreamTestCase {
@@ -35,12 +35,12 @@ public class TestReusableStringReaderCloner extends BaseTokenStreamTestCase {
     @Test
     public void testCloningReusableStringReader() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InstantiationException {
         // This test cannot be located inside TestReaderCloneFactory
-        // because of the ReusableStringReader class being package private
+        // because of the Field.ReusableStringReader class being package private
         // (and it's a real pain to use Java reflection to gain access to
         //  a package private constructor)
         Reader clone;
-        ReusableStringReader reader = new ReusableStringReader();
-        reader.init("test string");
+        Field.ReusableStringReader reader = new Field.ReusableStringReader();
+        reader.setValue("test string");
         ReaderCloneFactory.ReaderCloner<Reader> cloner = ReaderCloneFactory.getCloner(reader);
         assertNotNull(cloner);
         assertEquals(cloner.getClass().getName(), ReusableStringReaderCloner.class.getName());
@@ -50,32 +50,32 @@ public class TestReusableStringReaderCloner extends BaseTokenStreamTestCase {
         assertReaderContent(clone, "test string");
 
         // Test reusability
-        ReaderCloneFactory.ReaderCloner<ReusableStringReader> forClassClonerStrict = ReaderCloneFactory.getClonerStrict(ReusableStringReader.class);
+        ReaderCloneFactory.ReaderCloner<Field.ReusableStringReader> forClassClonerStrict = ReaderCloneFactory.getClonerStrict(Field.ReusableStringReader.class);
         assertNotNull(forClassClonerStrict);
         assertEquals(forClassClonerStrict.getClass().getName(), ReusableStringReaderCloner.class.getName());
-        reader.init("another test string");
+        reader.setValue("another test string");
         forClassClonerStrict.init(reader);
         clone = forClassClonerStrict.giveAClone();
         assertReaderContent(clone, "another test string");
         clone = forClassClonerStrict.giveAClone();
         assertReaderContent(clone, "another test string");
-        reader.init("test string");
+        reader.setValue("test string");
         forClassClonerStrict.init(reader);
         clone = forClassClonerStrict.giveAClone();
         assertReaderContent(clone, "test string");
         clone = forClassClonerStrict.giveAClone();
         assertReaderContent(clone, "test string");
 
-        ReaderCloneFactory.ReaderCloner<Reader> forClassCloner = ReaderCloneFactory.getCloner(ReusableStringReader.class);
+        ReaderCloneFactory.ReaderCloner<Reader> forClassCloner = ReaderCloneFactory.getCloner(Field.ReusableStringReader.class);
         assertNotNull(forClassCloner);
         assertEquals(forClassCloner.getClass().getName(), ReusableStringReaderCloner.class.getName());
-        reader.init("another test string");
+        reader.setValue("another test string");
         forClassCloner.init(reader);
         clone = forClassCloner.giveAClone();
         assertReaderContent(clone, "another test string");
         clone = forClassCloner.giveAClone();
         assertReaderContent(clone, "another test string");
-        reader.init("test string");
+        reader.setValue("test string");
         forClassCloner.init(reader);
         clone = forClassCloner.giveAClone();
         assertReaderContent(clone, "test string");

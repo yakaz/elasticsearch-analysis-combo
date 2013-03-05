@@ -19,6 +19,7 @@
 
 package org.elasticsearch.index.analysis;
 
+import org.apache.lucene.analysis.ComboAnalyzerWrapper;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.Injector;
 import org.elasticsearch.common.inject.assistedinject.Assisted;
@@ -32,9 +33,9 @@ import org.elasticsearch.index.settings.IndexSettings;
 /**
  * @author ofavre
  */
-public class ComboAnalyzerProvider extends AbstractIndexAnalyzerProvider<ComboAnalyzer> {
+public class ComboAnalyzerProvider extends AbstractIndexAnalyzerProvider<ComboAnalyzerWrapper> {
 
-    private final ESLogger logger = ESLoggerFactory.getLogger(ComboAnalyzer.NAME);
+    private final ESLogger logger = ESLoggerFactory.getLogger(ComboAnalyzerWrapper.NAME);
 
     private final Injector injector;
     private final Settings settings;
@@ -42,7 +43,7 @@ public class ComboAnalyzerProvider extends AbstractIndexAnalyzerProvider<ComboAn
 
     @Inject ComboAnalyzerProvider(Index index, @IndexSettings Settings indexSettings, Environment environment, @Assisted String name, @Assisted Settings settings, Injector injector) {
         super(index, indexSettings, name, settings);
-        // Store parameters for delegated usage inside the ComboAnalyzer itself
+        // Store parameters for delegated usage inside the ComboAnalyzerWrapper itself
         // Sub-analyzer resolution must use the AnalysisService,
         // but as we're a dependency of it (and it's not a Proxy-able interface)
         // we cannot in turn rely on it. Therefore the dependency has to be used lazily.
@@ -51,10 +52,10 @@ public class ComboAnalyzerProvider extends AbstractIndexAnalyzerProvider<ComboAn
         this.name = name;
     }
 
-    @Override public ComboAnalyzer get() {
+    @Override public ComboAnalyzerWrapper get() {
         // This function is also called during the AnalysisService initialization,
         // hence the following constructor also needs to to perform lazy loading by itself.
-        return new ComboAnalyzer(version, name, settings, injector);
+        return new ComboAnalyzerWrapper(version, name, settings, injector);
     }
     
 }

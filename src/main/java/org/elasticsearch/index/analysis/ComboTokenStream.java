@@ -37,12 +37,6 @@ import java.util.PriorityQueue;
  * was read from. If attributes are not uniform between sub-TokenStreams,
  * extraneous attributes will stay untouched.
  *
- * @remark Copying is the only solution since most caller call
- *         get/addAttribute once and keep on reading the same
- *         updated instance returned the first (and only) time.
- *         Fortunately, {@link AttributeImpl}s have a method
- *         for giving their values to another instance.
- * 
  * @author ofavre
  */
 public class ComboTokenStream extends TokenStream {
@@ -104,13 +98,12 @@ public class ComboTokenStream extends TokenStream {
         // Look position to see if it will be increased, see usage a bit below
         int pos = toRead.getPosition();
 
-        // Copy the current token attributes from the sub-TokenStream
-        // to our AttributeSource (see class javadoc remark)
+        // Copy the current token attributes from the sub-TokenStream to our AttributeSource
         AttributeSource currentAttributeSource = toRead;
         Iterator<Class<? extends Attribute>> iter = toRead.getAttributeClassesIterator();
         while (iter.hasNext()) {
             Class<? extends Attribute> clazz = iter.next();
-            @SuppressWarnings("unchecked") AttributeImpl attr = (AttributeImpl) currentAttributeSource.getAttribute(clazz); // forefully an AttributeImpl, read Lucene source
+            @SuppressWarnings("unchecked") AttributeImpl attr = (AttributeImpl) currentAttributeSource.getAttribute(clazz); // forcefully an AttributeImpl, read Lucene source
             if (this.hasAttribute(clazz)) {
                 @SuppressWarnings("unchecked") AttributeImpl attrLoc = (AttributeImpl) this.getAttribute(clazz);
                 attr.copyTo(attrLoc);
@@ -179,70 +172,6 @@ public class ComboTokenStream extends TokenStream {
      * AttributeSource delegated methods
      */
 
-    @Override public AttributeFactory getAttributeFactory() {
-        return super.getAttributeFactory();
-    }
-
-    @Override public Iterator<Class<? extends Attribute>> getAttributeClassesIterator() {
-        return super.getAttributeClassesIterator();
-    }
-
-    @Override public Iterator<AttributeImpl> getAttributeImplsIterator() {
-        return super.getAttributeImplsIterator();
-    }
-
-    @Override public void addAttributeImpl(AttributeImpl att) {
-        super.addAttributeImpl(att);
-    }
-
-    @Override public <A extends Attribute> A addAttribute(Class<A> attClass) {
-        // Apply on each sub-TokenStream
-        for (PositionedTokenStream pts : positionedTokenStreams) {
-            if (pts == null) continue;
-            pts.addAttribute(attClass);
-        }
-        return super.addAttribute(attClass);
-    }
-
-    @Override public boolean hasAttributes() {
-        return super.hasAttributes();
-    }
-
-    @Override public boolean hasAttribute(Class<? extends Attribute> attClass) {
-        return super.hasAttribute(attClass);
-    }
-
-    @Override public <A extends Attribute> A getAttribute(Class<A> attClass) {
-        return super.getAttribute(attClass);
-    }
-
-    @Override public void clearAttributes() {
-        // Apply on each sub-TokenStream
-        for (PositionedTokenStream pts : positionedTokenStreams) {
-            if (pts == null) continue;
-            pts.clearAttributes();
-        }
-        super.clearAttributes();
-    }
-
-    //
-    // The following methods may be unreliable to use
-    // with such a multiplexed implementation...
-    //
-
-    @Override public State captureState() {
-        return super.captureState();
-    }
-
-    @Override public void restoreState(State state) {
-        super.restoreState(state);
-    }
-
-    @Override public AttributeSource cloneAttributes() {
-        return super.cloneAttributes();
-    }
-
-    
     @Override public int hashCode() {
         return super.hashCode();
     }

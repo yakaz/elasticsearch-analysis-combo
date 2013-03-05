@@ -21,6 +21,8 @@ import org.apache.lucene.analysis.miscellaneous.UniqueTokenFilter;
 import org.apache.lucene.util.CloseableThreadLocal;
 import org.apache.lucene.util.ReaderCloneFactory;
 import org.apache.lucene.util.Version;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.ESLoggerFactory;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -43,19 +45,18 @@ import java.util.concurrent.atomic.AtomicReference;
  * However, there can still be cases where an {@link Analyzer} is used from
  * multiple places at a time before the {@link ComboTokenStream} is fully consumed,
  * and this causes problem.
- * For a solution, see {@link ComboAnalyzer.setTokenStreamReuseEnabled(boolean)}
- * and {@link ComboAnalyzer.setTokenStreamCachingEnabled(boolean)}.
+ * For a solution, see {@link #setTokenStreamCachingEnabled(boolean)}
+ * and {@link #setTokenStreamCachingEnabled(boolean)}.
  */
 public class ComboAnalyzer extends Analyzer {
 
-    /**
-     * Default value for the enabled state of {@link TokenStream} reuse.
-     */
-    public static final boolean TOKENSTREAM_REUSE_ENABLED_DEFAULT = false;
+    protected static final ESLogger logger = ESLoggerFactory.getLogger(ComboAnalyzer.class.getSimpleName());
+
     /**
      * Default value for the enabled state of {@link TokenStream} caching.
      */
     public static final boolean TOKENSTREAM_CACHING_ENABLED_DEFAULT = false;
+
     /**
      * Default value for the enabled state of token deduplication.
      */
@@ -63,7 +64,6 @@ public class ComboAnalyzer extends Analyzer {
 
     private Analyzer[] subAnalyzers;
 
-    private boolean disableTokenStreamReuse = TOKENSTREAM_REUSE_ENABLED_DEFAULT;
     private boolean hasDuplicatedAnalyzers;
     private Set<Analyzer> duplicatedAnalyzers;
 
@@ -73,9 +73,11 @@ public class ComboAnalyzer extends Analyzer {
 
     private CloseableThreadLocal<TokenStream[]> lastTokenStreams = new CloseableThreadLocal<TokenStream[]>();
     private CloseableThreadLocal<TokenStream[]> tempTokenStreams = new CloseableThreadLocal<TokenStream[]>();
-    private CloseableThreadLocal<TokenStream> lastComboTokenStream = new CloseableThreadLocal<TokenStream>();
+    private CloseableThreadLocal<ReusableTokenStreamComponents> lastComboTokenStream = new CloseableThreadLocal<ReusableTokenStreamComponents>();
 
     public ComboAnalyzer(Version version, Analyzer... subAnalyzers) {
+        super(NeverReuseStrategy.INSTANCE);
+
         this.subAnalyzers = subAnalyzers;
 
         // Detect duplicates in analyzers
@@ -92,54 +94,6 @@ public class ComboAnalyzer extends Analyzer {
     }
 
     /**
-     * Enable or disable completely the reuse of {@link Analyzer} {@link TokenStream}s.
-     *
-     * Some analyzers have a true implementation of {@link Analyzer.reusableTokenStream(String,Reader)},
-     * like those inheriting {@link ReusableAnalyzerBase}.
-     * This is thread-safe by contract, but prevents the same {@link Analyzer} instance from providing
-     * two {@link TokenStream} for simultaneous use.
-     *
-     * There is a support for multiple use of the same {@link Analyzer} instance in the list of analyzers
-     * provided in the constructor, but there is no way of asserting that no other code will alter one of
-     * the reused {@link TokenStream}s before the caller is done reading the {@link ComboTokenStream}.
-     *
-     * As it is a rather rare scenario, we provide a simple way of getting past those problems
-     * when you see them: disabling the reuse of {@link TokenStream}s.
-     *
-     * @param value {@code false} to disable the reuse of {@link TokenStream}s,
-     *              {@code true} to enable it.
-     *
-     * @return This instance, for chainable construction.
-     *
-     * @see ComboAnalyzer.TOKENSTREAM_REUSE_ENABLED_DEFAULT
-     * @see ComboAnalyzer.setTokenStreamCachingEnabled(boolean)
-     */
-    public ComboAnalyzer setTokenStreamReuseEnabled(boolean value) {
-        disableTokenStreamReuse = value;
-        return this;
-    }
-
-    /**
-     * Enable the reuse of {@link Analyzer} {@link TokenStream}s.
-     * @return This instance, for chainable construction.
-     * @see ComboAnalyzer.setTokenStreamReuseEnabled(boolean)
-     */
-    public ComboAnalyzer enableTokenStreamReuse() {
-        disableTokenStreamReuse = false;
-        return this;
-    }
-
-    /**
-     * Disable completely the reuse of {@link Analyzer} {@link TokenStream}s.
-     * @return This instance, for chainable construction.
-     * @see ComboAnalyzer.setTokenStreamReuseEnabled(boolean)
-     */
-    public ComboAnalyzer disableTokenStreamReuse() {
-        disableTokenStreamReuse = true;
-        return this;
-    }
-
-    /**
      * Enable or disable the systematic caching of {@link Analyzer} {@link TokenStream}s.
      *
      * {@link TokenStream}s gotten from the {@link Analyzer}s will be cached upfront.
@@ -152,8 +106,7 @@ public class ComboAnalyzer extends Analyzer {
      *
      * @return This instance, for chainable construction.
      *
-     * @see ComboAnalyzer.TOKENSTREAM_CACHING_ENABLED_DEFAULT
-     * @see ComboAnalyzer.setTokenStreamReuseEnabled(boolean)
+     * @see #TOKENSTREAM_CACHING_ENABLED_DEFAULT
      */
     public ComboAnalyzer setTokenStreamCachingEnabled(boolean value) {
         cacheTokenStreams = value;
@@ -163,7 +116,7 @@ public class ComboAnalyzer extends Analyzer {
     /**
      * Enable the systematic caching of {@link Analyzer} {@link TokenStream}s.
      * @return This instance, for chainable construction.
-     * @see ComboAnalyzer.setTokenStreamCachingEnabled(boolean)
+     * @see #setTokenStreamCachingEnabled(boolean)
      */
     public ComboAnalyzer enableTokenStreamCaching() {
         cacheTokenStreams = true;
@@ -173,7 +126,7 @@ public class ComboAnalyzer extends Analyzer {
     /**
      * Disable the systematic caching of {@link Analyzer} {@link TokenStream}s.
      * @return This instance, for chainable construction.
-     * @see ComboAnalyzer.setTokenStreamCachingEnabled(boolean)
+     * @see #setTokenStreamCachingEnabled(boolean)
      */
     public ComboAnalyzer disableTokenStreamCaching() {
         cacheTokenStreams = false;
@@ -188,7 +141,7 @@ public class ComboAnalyzer extends Analyzer {
      *
      * @return This instance, for chainable construction.
      *
-     * @see ComboAnalyzer.DEDUPLICATION_ENABLED_DEFAULT
+     * @see #DEDUPLICATION_ENABLED_DEFAULT
      */
     public ComboAnalyzer setDeduplicationEnabled(boolean value) {
         deduplication = value;
@@ -196,9 +149,9 @@ public class ComboAnalyzer extends Analyzer {
     }
 
     /**
-     * Enable the systematic caching of {@link Analyzer} {@link TokenStream}s.
+     * Enable deduplication of repeated tokens at the same position.
      * @return This instance, for chainable construction.
-     * @see ComboAnalyzer.setDeduplicationEnabled(boolean)
+     * @see #setDeduplicationEnabled(boolean)
      */
     public ComboAnalyzer enableDeduplication() {
         deduplication = true;
@@ -206,19 +159,19 @@ public class ComboAnalyzer extends Analyzer {
     }
 
     /**
-     * Disable the systematic caching of {@link Analyzer} {@link TokenStream}s.
+     * Disable deduplication of repeated tokens at the same position.
      * @return This instance, for chainable construction.
-     * @see ComboAnalyzer.setDeduplicationEnabled(boolean)
+     * @see #setDeduplicationEnabled(boolean)
      */
     public ComboAnalyzer disableDeduplication() {
         deduplication = false;
         return this;
     }
 
+    protected ReaderCloneFactory.ReaderCloner<? extends Reader> cloneReader(Reader originalReader) {
+        ReaderCloneFactory.ReaderCloner<? extends Reader> rtn;
 
-    @Override public final TokenStream tokenStream(String fieldName, Reader originalReader) {
         // Duplication of the original reader, to feed all sub-analyzers
-        ReaderCloneFactory.ReaderCloner readerCloner = null;
         if (subAnalyzers.length <= 1) {
 
             // Can reuse the only reader we have, there will be no need of duplication
@@ -237,16 +190,24 @@ public class ComboAnalyzer extends Analyzer {
             } catch (Throwable fail) {
                 useOnceReaderCloner = null;
             }
-            readerCloner = useOnceReaderCloner;
+            rtn = useOnceReaderCloner;
 
         } else {
 
-            readerCloner = ReaderCloneFactory.getCloner(originalReader); // internally uses the default "should always work" implementation
-            if (readerCloner == null) {
-                throw new IllegalArgumentException("Could not duplicate the original reader to feed multiple sub-readers");
-            }
+            rtn = ReaderCloneFactory.getCloner(originalReader); // internally uses the default "should always work" implementation
 
         }
+
+        if (rtn == null) {
+            throw new IllegalArgumentException("Could not duplicate the original reader to feed multiple sub-readers");
+        }
+        return rtn;
+    }
+
+    @Override
+    protected TokenStreamComponents createComponents(String fieldName, Reader originalReader) {
+        // Duplication of the original reader, to feed all sub-analyzers
+        ReaderCloneFactory.ReaderCloner readerCloner = cloneReader(originalReader);
 
         // We remember last used TokenStreams because many times Analyzers can provide a reusable TokenStream
         // Detecting that all sub-TokenStreams are reusable permits to reuse our ComboTokenStream as well.
@@ -254,77 +215,59 @@ public class ComboAnalyzer extends Analyzer {
         if (lastTokenStreams.get() == null) lastTokenStreams.set(new TokenStream[subAnalyzers.length]); // only at first run
         TokenStream[] tempTokenStreams_local = tempTokenStreams.get();
         TokenStream[] lastTokenStreams_local = lastTokenStreams.get();
-        TokenStream lastComboTokenStream_local = lastComboTokenStream.get();
+        ReusableTokenStreamComponents lastComboTokenStream_local = lastComboTokenStream.get();
+        if (lastComboTokenStream_local == null)
+            lastComboTokenStream_local = new ReusableTokenStreamComponents();
 
         // Get sub-TokenStreams from sub-analyzers
-        Set<Analyzer> unusedDuplicated = hasDuplicatedAnalyzers ? new HashSet<Analyzer>(duplicatedAnalyzers) : null;
         for (int i = subAnalyzers.length-1 ; i >= 0 ; --i) {
 
             // Feed the troll
             Reader reader = readerCloner.giveAClone();
-            boolean tryReusable = !disableTokenStreamReuse;
-            if (!disableTokenStreamReuse && hasDuplicatedAnalyzers && duplicatedAnalyzers.contains(subAnalyzers[i])) {
-                if (unusedDuplicated.contains(subAnalyzers[i])) {
-                    // Only try reusable once for an analyzer instance used multiple times
-                    unusedDuplicated.remove(subAnalyzers[i]);
-                } else {
-                    tryReusable = false;
-                }
-            }
             tempTokenStreams_local[i] = null;
-            if (tryReusable) {
-                // Try a reusable sub-TokenStream
-                try {
-                    tempTokenStreams_local[i] = subAnalyzers[i].reusableTokenStream(fieldName, reader);
-                } catch (IOException ex) {
-                }
-            }
-            if (tempTokenStreams_local[i] == null) {
-                // Either forced to, or falls back to non-reusable
+            try {
                 tempTokenStreams_local[i] = subAnalyzers[i].tokenStream(fieldName, reader);
+            } catch (IOException ignored) {
+                logger.debug("Ignoring {}th analyzer [{}]. Could not get a TokenStream.", ignored, i, subAnalyzers[i]);
             }
-            if (cacheTokenStreams) {
-                CachingTokenFilter cache = new CachingTokenFilter(tempTokenStreams_local[i]);
+            // Use caching if asked or if required in case of duplicated analyzers
+            if (cacheTokenStreams || hasDuplicatedAnalyzers && duplicatedAnalyzers.contains(subAnalyzers[i])) {
+                CachingTokenStream cache = new CachingTokenStream(tempTokenStreams_local[i]);
                 try {
-                    // Force lazy initialization to take place
-                    cache.incrementToken();
-                    // Rewind to the beginning
-                    cache.reset();
-                } catch (IOException e) {
+                    tempTokenStreams_local[i].reset();
+                    cache.fillCache();
+                } catch (IOException ignored) {
+                    logger.debug("Got an error when caching TokenStream from the {}th analyzer [{}]", i, subAnalyzers[i]);
                 }
                 try {
                     // Close original stream, all tokens are buffered
                     tempTokenStreams_local[i].close();
-                } catch (IOException e) {
+                } catch (IOException ignored) {
+                    logger.debug("Got an error when closing TokenStream from the {}th analyzer [{}]", i, subAnalyzers[i]);
                 }
                 tempTokenStreams_local[i] = cache;
             }
             // Detect non reusability
             if (tempTokenStreams_local[i] != lastTokenStreams_local[i]) {
-                lastComboTokenStream_local = null;
+                lastComboTokenStream_local.setTokenStream(null);
             }
         }
 
         // If last ComboTokenStream is not available create a new one
         // This happens in the first call and in case of non reusability
-        if (lastComboTokenStream_local == null) {
+        if (lastComboTokenStream_local.getTokenStream() == null) {
             // Clear old invalid references (preferred over allocating a new array)
             Arrays.fill(lastTokenStreams_local, null);
             // Swap temporary and last (non reusable) TokenStream references
             lastTokenStreams.set(tempTokenStreams_local);
             tempTokenStreams.set(lastTokenStreams_local);
             // New ComboTokenStream to use
-            lastComboTokenStream_local = new ComboTokenStream(tempTokenStreams_local);
+            lastComboTokenStream_local.setTokenStream(new ComboTokenStream(tempTokenStreams_local));
             if (deduplication)
-                lastComboTokenStream_local = new UniqueTokenFilter(lastComboTokenStream_local, true);
+                lastComboTokenStream_local.setTokenStream(new UniqueTokenFilter(lastComboTokenStream_local.getTokenStream(), true));
             lastComboTokenStream.set(lastComboTokenStream_local);
         }
         return lastComboTokenStream_local;
-    }
-
-    @Override
-    public final TokenStream reusableTokenStream(String fieldName, Reader reader) throws IOException {
-        return super.reusableTokenStream(fieldName, reader);
     }
 
     @Override public void close() {
@@ -333,4 +276,20 @@ public class ComboAnalyzer extends Analyzer {
         tempTokenStreams.close();
         lastComboTokenStream.close();
     }
+
+    public static class NeverReuseStrategy extends ReuseStrategy {
+
+        public static final NeverReuseStrategy INSTANCE = new NeverReuseStrategy();
+
+        @Override
+        public TokenStreamComponents getReusableComponents(String fieldName) {
+            return null;
+        }
+
+        @Override
+        public void setReusableComponents(String fieldName, TokenStreamComponents components) {
+        }
+
+    }
+
 }

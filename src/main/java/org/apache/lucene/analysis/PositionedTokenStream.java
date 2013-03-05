@@ -55,8 +55,8 @@ public class PositionedTokenStream extends TokenFilter implements Comparable<Pos
     }
 
     /*
-    * "TokenStream interface"
-    */
+     * "TokenStream interface"
+     */
 
     public final boolean incrementToken() throws IOException {
         boolean rtn = input.incrementToken();
