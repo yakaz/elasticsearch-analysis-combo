@@ -83,7 +83,7 @@ public class ReaderCloneFactory {
         /**
          * Returns a new {@link Reader}.
          * <P><B>Remark:</B> The returned Reader should be closed.
-         *     The original Reader, if not consumed by the {@link #init(T)} method,
+         *     The original Reader, if not consumed by the {@link #init(java.io.Reader)} method,
          *     should be returned at first call. Therefore it is important to
          *     call this method at least once, or to be prepared to face possible
          *     exceptions when closing the original Reader.
