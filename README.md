@@ -8,37 +8,39 @@ Installation
 
 Simply run at the root of your ElasticSearch v0.20.2+ installation:
 
-	bin/plugin -install com.yakaz.elasticsearch.plugins/elasticsearch-analysis-combo/1.2.1
+	bin/plugin -install com.yakaz.elasticsearch.plugins/elasticsearch-analysis-combo/1.3.0
 
 This will download the plugin from the Central Maven Repository.
 
 For older versions of ElasticSearch, you can still use the longer:
 
-	bin/plugin -url http://oss.sonatype.org/content/repositories/releases/com/yakaz/elasticsearch/plugins/elasticsearch-analysis-combo/1.2.1/elasticsearch-analysis-combo-1.2.1.zip install elasticsearch-analysis-combo
+	bin/plugin -url http://oss.sonatype.org/content/repositories/releases/com/yakaz/elasticsearch/plugins/elasticsearch-analysis-combo/1.3.0/elasticsearch-analysis-combo-1.3.0.zip install elasticsearch-analysis-combo
 
 In order to declare this plugin as a dependency, add the following to your `pom.xml`:
 
 	<dependency>
 	    <groupId>com.yakaz.elasticsearch.plugins</groupId>
 	    <artifactId>elasticsearch-analysis-combo</artifactId>
-	    <version>1.2.1</version>
+	    <version>1.3.0</version>
 	</dependency>
 
 Version matrix:
 
-    ---------------------------------------------------
-    | HashSplitter Analysis Plugin | ElasticSearch    |
-    ---------------------------------------------------
-    | master                       | 0.19.0 -> master |
-    ---------------------------------------------------
-    | 1.2.0                        | 0.19.0 -> master |
-    ---------------------------------------------------
-    | 1.1.0                        | 0.19.0 -> master |
-    ---------------------------------------------------
-    | 1.0.1                        | 0.19.0 -> master |
-    ---------------------------------------------------
-    | 1.0.0                        | 0.19.0 -> master |
-    ---------------------------------------------------
+    -------------------------------------------------
+    | HashSplitter Analysis Plugin | ElasticSearch  |
+    -------------------------------------------------
+    | master                       | 0.90 -> master |
+    -------------------------------------------------
+    | 1.3.0                        | 0.90 -> master |
+    -------------------------------------------------
+    | 1.2.0                        | 0.19 -> master |
+    -------------------------------------------------
+    | 1.1.0                        | 0.19 -> master |
+    -------------------------------------------------
+    | 1.0.1                        | 0.19 -> master |
+    -------------------------------------------------
+    | 1.0.0                        | 0.19 -> master |
+    -------------------------------------------------
 
 Description
 -----------
