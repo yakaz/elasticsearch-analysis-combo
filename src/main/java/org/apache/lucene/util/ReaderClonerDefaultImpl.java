@@ -17,7 +17,6 @@
  * under the License.
  */
 
-// Using javax instead of java because of JVM security measures!
 package org.apache.lucene.util;
 
 import java.io.IOException;
@@ -60,12 +59,11 @@ public class ReaderClonerDefaultImpl implements ReaderCloneFactory.ReaderCloner<
 
     /**
      * Extracts the original content from a generic Reader instance
-     * by repeatedly calling {@link Reader.read(char[])} on it,
+     * by repeatedly calling {@link Reader#read(char[])} on it,
      * feeding a {@link StringBuilder}.
      *
      * @param initialCapacity   Initial StringBuilder capacity
      * @param readBufferSize    Size of the char[] read buffer at each read() call
-     * @throws IOException
      */
     public ReaderClonerDefaultImpl(int initialCapacity, int readBufferSize) {
         this.initialCapacity = initialCapacity;
@@ -74,13 +72,13 @@ public class ReaderClonerDefaultImpl implements ReaderCloneFactory.ReaderCloner<
 
     public void init(Reader originalReader) throws IOException {
         this.originalContent = null;
-        StringBuilder sb = null;
+        StringBuilder sb;
         if (initialCapacity < 0)
             sb = new StringBuilder();
         else
             sb = new StringBuilder(initialCapacity);
         char[] buffer = new char[readBufferSize];
-        int read = -1;
+        int read;
         while((read = originalReader.read(buffer)) != -1){
             sb.append(buffer, 0, read);
         }

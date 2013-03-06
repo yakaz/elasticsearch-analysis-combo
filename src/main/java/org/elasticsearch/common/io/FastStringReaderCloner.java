@@ -28,9 +28,7 @@ import java.io.Reader;
  * A specialized ReaderCloner that works with {@link FastStringReader} instances.
  *
  * The original String is merely gotten through a call to
- * {@link FastStringReader.toString()}.
- * 
- * @author ofavre
+ * {@link FastStringReader#toString()}.
  */
 public class FastStringReaderCloner implements ReaderCloneFactory.ReaderCloner<FastStringReader> {
 

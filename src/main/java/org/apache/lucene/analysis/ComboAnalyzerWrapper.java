@@ -33,8 +33,6 @@ import java.util.ArrayList;
 
 /**
  * ElasticSearch ComboAnalyzerWrapper wrapper over Lucene ComboAnalyzerWrapper.
- *
- * @author ofavre
  */
 public final class ComboAnalyzerWrapper extends Analyzer {
 

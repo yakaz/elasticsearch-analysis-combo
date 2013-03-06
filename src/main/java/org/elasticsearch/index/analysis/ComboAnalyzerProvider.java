@@ -23,25 +23,17 @@ import org.apache.lucene.analysis.ComboAnalyzerWrapper;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.Injector;
 import org.elasticsearch.common.inject.assistedinject.Assisted;
-import org.elasticsearch.common.logging.ESLogger;
-import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.Index;
 import org.elasticsearch.index.settings.IndexSettings;
 
-/**
- * @author ofavre
- */
 public class ComboAnalyzerProvider extends AbstractIndexAnalyzerProvider<ComboAnalyzerWrapper> {
-
-    private final ESLogger logger = ESLoggerFactory.getLogger(ComboAnalyzerWrapper.NAME);
 
     private final Injector injector;
     private final Settings settings;
     private final String name;
 
-    @Inject ComboAnalyzerProvider(Index index, @IndexSettings Settings indexSettings, Environment environment, @Assisted String name, @Assisted Settings settings, Injector injector) {
+    @Inject ComboAnalyzerProvider(Index index, @IndexSettings Settings indexSettings, @Assisted String name, @Assisted Settings settings, Injector injector) {
         super(index, indexSettings, name, settings);
         // Store parameters for delegated usage inside the ComboAnalyzerWrapper itself
         // Sub-analyzer resolution must use the AnalysisService,

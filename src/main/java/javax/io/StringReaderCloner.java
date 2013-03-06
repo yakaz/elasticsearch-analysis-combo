@@ -38,8 +38,6 @@ import java.lang.reflect.Field;
  * to the used JVM implementation.
  * If the introspection does not work, an {@link IllegalArgumentException}
  * is thrown.
- *
- * @author ofavre
  */
 public class StringReaderCloner implements ReaderCloneFactory.ReaderCloner<StringReader> {
 

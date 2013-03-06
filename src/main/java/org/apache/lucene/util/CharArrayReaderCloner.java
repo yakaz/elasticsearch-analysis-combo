@@ -1,5 +1,3 @@
-package org.apache.lucene.util;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -17,6 +15,8 @@ package org.apache.lucene.util;
  * limitations under the License.
  */
 
+package org.apache.lucene.util;
+
 import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -33,8 +33,6 @@ import java.lang.reflect.Field;
  * to the used JVM implementation.
  * If the introspection does not work, an {@link IllegalArgumentException}
  * is thrown.
- *
- * @author ofavre
  */
 public class CharArrayReaderCloner implements ReaderCloneFactory.ReaderCloner<CharArrayReader> {
 

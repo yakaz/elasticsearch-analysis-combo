@@ -1,5 +1,3 @@
-package org.apache.lucene.util;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,6 +14,8 @@ package org.apache.lucene.util;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.apache.lucene.util;
 
 import org.testng.annotations.Test;
 
@@ -41,7 +41,7 @@ public class TestReaderCloneFactory extends LuceneTestCase {
         StringReader reader = new StringReader("test string");
         ReaderCloneFactory.ReaderCloner<Reader> cloner = ReaderCloneFactory.getCloner(reader);
         assertNotNull(cloner);
-        assertEquals(cloner.getClass().getName(), StringReaderCloner.class.getName());
+        assertEquals(StringReaderCloner.class, cloner.getClass());
         Reader clone;
         clone = cloner.giveAClone();
         assertReaderContent(clone, "test string");
@@ -51,7 +51,7 @@ public class TestReaderCloneFactory extends LuceneTestCase {
         // Test reusability
         ReaderCloneFactory.ReaderCloner<StringReader> forClassClonerStrict = ReaderCloneFactory.getClonerStrict(StringReader.class);
         assertNotNull(forClassClonerStrict);
-        assertEquals(forClassClonerStrict.getClass().getName(), StringReaderCloner.class.getName());
+        assertEquals(StringReaderCloner.class, forClassClonerStrict.getClass());
         forClassClonerStrict.init(new StringReader("test string"));
         clone = forClassClonerStrict.giveAClone();
         assertReaderContent(clone, "test string");
@@ -65,7 +65,7 @@ public class TestReaderCloneFactory extends LuceneTestCase {
 
         ReaderCloneFactory.ReaderCloner<Reader> forClassCloner = ReaderCloneFactory.getCloner(StringReader.class);
         assertNotNull(forClassCloner);
-        assertEquals(forClassCloner.getClass().getName(), StringReaderCloner.class.getName());
+        assertEquals(StringReaderCloner.class, forClassCloner.getClass());
         forClassCloner.init(new StringReader("test string"));
         clone = forClassCloner.giveAClone();
         assertReaderContent(clone, "test string");
@@ -83,7 +83,7 @@ public class TestReaderCloneFactory extends LuceneTestCase {
         CharArrayReader reader = new CharArrayReader("test string".toCharArray());
         ReaderCloneFactory.ReaderCloner<Reader> cloner = ReaderCloneFactory.getCloner(reader);
         assertNotNull(cloner);
-        assertEquals(cloner.getClass().getName(), CharArrayReaderCloner.class.getName());
+        assertEquals(CharArrayReaderCloner.class, cloner.getClass());
         Reader clone;
         clone = cloner.giveAClone();
         assertReaderContent(clone, "test string");
@@ -93,7 +93,7 @@ public class TestReaderCloneFactory extends LuceneTestCase {
         // Test reusability
         ReaderCloneFactory.ReaderCloner<CharArrayReader> forClassClonerStrict = ReaderCloneFactory.getClonerStrict(CharArrayReader.class);
         assertNotNull(forClassClonerStrict);
-        assertEquals(cloner.getClass().getName(), CharArrayReaderCloner.class.getName());
+        assertEquals(CharArrayReaderCloner.class, cloner.getClass());
         forClassClonerStrict.init(new CharArrayReader("test string".toCharArray()));
         clone = forClassClonerStrict.giveAClone();
         assertReaderContent(clone, "test string");
@@ -107,7 +107,7 @@ public class TestReaderCloneFactory extends LuceneTestCase {
 
         ReaderCloneFactory.ReaderCloner<Reader> forClassCloner = ReaderCloneFactory.getCloner(CharArrayReader.class);
         assertNotNull(forClassCloner);
-        assertEquals(cloner.getClass().getName(), CharArrayReaderCloner.class.getName());
+        assertEquals(CharArrayReaderCloner.class, cloner.getClass());
         forClassCloner.init(new CharArrayReader("test string".toCharArray()));
         clone = forClassCloner.giveAClone();
         assertReaderContent(clone, "test string");
@@ -127,7 +127,7 @@ public class TestReaderCloneFactory extends LuceneTestCase {
         BufferedReader reader = new BufferedReader(stringReader);
         ReaderCloneFactory.ReaderCloner<Reader> cloner = ReaderCloneFactory.getCloner(reader);
         assertNotNull(cloner);
-        assertEquals(cloner.getClass().getName(), StringReaderCloner.class.getName());
+        assertEquals(StringReaderCloner.class, cloner.getClass());
         Reader clone;
         clone = cloner.giveAClone();
         assertReaderContent(clone, "test string");
@@ -140,7 +140,7 @@ public class TestReaderCloneFactory extends LuceneTestCase {
 
         ReaderCloneFactory.ReaderCloner<Reader> forClassCloner = ReaderCloneFactory.getCloner(BufferedReader.class);
         assertNotNull(forClassCloner);
-        assertEquals(forClassCloner.getClass().getName(), ReaderClonerDefaultImpl.class.getName());
+        assertEquals(ReaderClonerDefaultImpl.class, forClassCloner.getClass());
         forClassCloner.init(new BufferedReader(new StringReader("test string")));
         clone = forClassCloner.giveAClone();
         assertReaderContent(clone, "test string");
@@ -160,7 +160,7 @@ public class TestReaderCloneFactory extends LuceneTestCase {
         FilterReader reader = new PushbackReader(stringReader);
         ReaderCloneFactory.ReaderCloner<Reader> cloner = ReaderCloneFactory.getCloner(reader);
         assertNotNull(cloner);
-        assertEquals(cloner.getClass(), StringReaderCloner.class);
+        assertEquals(StringReaderCloner.class, cloner.getClass());
         Reader clone;
         clone = cloner.giveAClone();
         assertReaderContent(clone, "test string");
@@ -173,7 +173,7 @@ public class TestReaderCloneFactory extends LuceneTestCase {
 
         ReaderCloneFactory.ReaderCloner<Reader> forClassCloner = ReaderCloneFactory.getCloner(FilterReader.class);
         assertNotNull(forClassCloner);
-        assertEquals(forClassCloner.getClass().getName(), ReaderClonerDefaultImpl.class.getName());
+        assertEquals(ReaderClonerDefaultImpl.class, forClassCloner.getClass());
         forClassCloner.init(new BufferedReader(new StringReader("test string")));
         clone = cloner.giveAClone();
         assertReaderContent(clone, "test string");
@@ -198,7 +198,7 @@ public class TestReaderCloneFactory extends LuceneTestCase {
             }
         };
         ReaderCloneFactory.ReaderCloner<Reader> cloner = ReaderCloneFactory.getCloner(reader);
-        assertEquals(cloner.getClass().getName(), ReaderClonerDefaultImpl.class.getName());
+        assertEquals(ReaderClonerDefaultImpl.class, cloner.getClass());
         Reader clone;
         clone = cloner.giveAClone();
         assertReaderContent(clone, "test string");
@@ -211,7 +211,7 @@ public class TestReaderCloneFactory extends LuceneTestCase {
 
         ReaderCloneFactory.ReaderCloner<Reader> forClassCloner = ReaderCloneFactory.getCloner(reader.getClass());
         assertNotNull(forClassCloner);
-        assertEquals(forClassCloner.getClass().getName(), ReaderClonerDefaultImpl.class.getName());
+        assertEquals(ReaderClonerDefaultImpl.class, forClassCloner.getClass());
         final StringReader delegated2 = new StringReader("test string");
         Reader reader2 = new Reader() {
             @Override public int read(char[] cbuf, int off, int len) throws IOException {

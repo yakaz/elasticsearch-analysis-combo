@@ -36,8 +36,6 @@ import java.lang.reflect.Field;
  * to the actual ElasticSearch implementation.
  * If the introspection does not work, an {@link IllegalArgumentException}
  * is thrown.
- *
- * @author ofavre
  */
 public class FastCharArrayReaderCloner implements ReaderCloneFactory.ReaderCloner<FastCharArrayReader> {
 

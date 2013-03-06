@@ -1,5 +1,3 @@
-package org.apache.lucene.analysis;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,6 +14,8 @@ package org.apache.lucene.analysis;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.apache.lucene.analysis;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
@@ -112,7 +112,7 @@ public class TestComboTokenStream extends BaseTokenStreamTestCase {
                         new int[]{ 2,  4,  6},
                         new int[]{ 1,  1,  1})
         );
-        CheckClearAttributesAttribute checkClearAtt = cts.addAttribute(CheckClearAttributesAttribute.class);
+        cts.addAttribute(CheckClearAttributesAttribute.class);
         assertTokenStreamContents(cts,
                 new String[]{"ab", "cd", "ef"},
                 new int[]{ 0,  3,  5},

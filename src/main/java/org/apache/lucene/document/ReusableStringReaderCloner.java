@@ -34,8 +34,6 @@ import java.io.StringReader;
  * The implementation exploits the fact that ReusableStringReader has a package
  * private field {@code String s}, storing the original content.
  * It is therefore sensitive to Lucene implementation changes.
- *
- * @author ofavre
  */
 public class ReusableStringReaderCloner implements ReaderCloneFactory.ReaderCloner<Field.ReusableStringReader> {
 

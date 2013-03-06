@@ -8,7 +8,6 @@ import static junit.framework.Assert.assertEquals;
 
 /**
  * Utility class to extract the String content from a {@link java.io.Reader}.
- * @author ofavre
  */
 public class ReaderContent {
 

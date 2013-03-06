@@ -21,9 +21,6 @@ package org.elasticsearch.index.analysis;
 
 import org.apache.lucene.analysis.ComboAnalyzerWrapper;
 
-/**
- * @author ofavre
- */
 public class ComboAnalysisBinderProcessor extends AnalysisModule.AnalysisBinderProcessor {
 
     @Override public void processAnalyzers(AnalyzersBindings analyzersBindings) {

@@ -1,5 +1,3 @@
-package org.apache.lucene.util;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,6 +14,8 @@ package org.apache.lucene.util;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.apache.lucene.util;
 
 import org.apache.lucene.document.ReusableStringReaderCloner;
 
@@ -61,27 +61,28 @@ public class ReaderCloneFactory {
     /**
      * Interface for a utility class, able to clone the content of a {@link java.io.Reader},
      * possibly in an optimized way (such as gaining access to a package private field,
-     * or through reflection using {@link java.lang.reflect.Field.setAccessible(boolean)}).
+     * or through reflection using {@link java.lang.reflect.Field#setAccessible(boolean)}).
      * @param <T> The base class handled.
      */
     public static interface ReaderCloner<T extends Reader> {
         /**
          * Initialize or reinitialize the cloner with the given reader.
          * The implementing class should have a default no arguments constructor.
-         * @remark The given Reader is now controlled by this ReaderCloner, it may
-         *         be closed during a call to this method, or it may be returned
-         *         at first call to {@link giveAClone()}.
-         * @see giveAClone()
+         *
+         * <P><B>Remark:</B> The given Reader is now controlled by this ReaderCloner, it may
+         *     be closed during a call to this method, or it may be returned
+         *     at first call to {@link #giveAClone()}.
+         * @see #giveAClone()
          */
         public void init(T originalReader) throws IOException;
 
         /**
          * Returns a new {@link Reader}.
-         * @remark The returned Reader should be closed.
-         *         The original Reader, if not consumed by the {@link init(T)} method,
-         *         should be returned at first call. Therefore it is important to
-         *         call this method at least once, or to be prepared to face possible
-         *         exceptions when closing the original Reader.
+         * <P><B>Remark:</B> The returned Reader should be closed.
+         *     The original Reader, if not consumed by the {@link #init(T)} method,
+         *     should be returned at first call. Therefore it is important to
+         *     call this method at least once, or to be prepared to face possible
+         *     exceptions when closing the original Reader.
          */
         public Reader giveAClone();
     }
@@ -228,7 +229,7 @@ public class ReaderCloneFactory {
                         // Recursive resolution
                         Reader unwrapped = unwrapper.unwrap(forReader);
                         if (unwrapped != null)
-                            return (ReaderCloner<T>)ReaderCloneFactory.<Reader,Reader>getCloner(Reader.class, (Class<Reader>)unwrapped.getClass(), unwrapped);
+                            return (ReaderCloner<T>)ReaderCloneFactory.getCloner(Reader.class, (Class<Reader>)unwrapped.getClass(), unwrapped);
                     } catch (Throwable ignore) {
                         // in case of errors, simply continue the began process and forget about this failed attempt
                     }
@@ -279,14 +280,14 @@ public class ReaderCloneFactory {
      * @return An uninitialized ReaderCloner suitable for any <code>S</code>, or null.
      */
     public static <S extends Reader> ReaderCloner<Reader> getCloner(Class<S> forClass) {
-        return ReaderCloneFactory.<Reader,S>getCloner(Reader.class, forClass, (S)null);
+        return ReaderCloneFactory.<Reader,S>getCloner(Reader.class, forClass, null);
     }
 
     /**
      * Returns an initialized ReaderCloner, for the given Reader.
      *
      * Calls <code>ReaderCloneFactory.<Reader, S>getCloner(Reader.class, (Class<S>)forReader.getClass(), forReader)</code>.
-     * If <code>forReader</code> is <code>null</code>, works as {@link ReaderCloneFactory.getGenericCloner()}.
+     * If <code>forReader</code> is <code>null</code>, works as {@link ReaderCloneFactory#getGenericCloner()}.
      *
      * @param forReader The Reader instance to return and initialize a ReaderCloner for. Can be null.
      * @param <S> The class of the given Reader
@@ -303,7 +304,7 @@ public class ReaderCloneFactory {
      * Returns a {@link ReaderCloner} suitable for any {@link java.io.Reader} instance.
      */
     public static ReaderCloner<Reader> getGenericCloner() {
-        return ReaderCloneFactory.<Reader, Reader>getCloner(Reader.class, Reader.class, (Reader)null);
+        return ReaderCloneFactory.getCloner(Reader.class, Reader.class, null);
     }
 
 }

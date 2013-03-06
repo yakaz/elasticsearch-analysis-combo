@@ -24,9 +24,6 @@ import org.elasticsearch.index.analysis.AnalysisModule;
 import org.elasticsearch.index.analysis.ComboAnalysisBinderProcessor;
 import org.elasticsearch.plugins.AbstractPlugin;
 
-/**
- * @author ofavre
- */
 public class AnalysisComboPlugin extends AbstractPlugin {
 
     @Override public String name() {
