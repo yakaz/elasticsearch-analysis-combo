@@ -18,6 +18,8 @@
 package org.apache.lucene.util;
 
 import org.apache.lucene.document.ReusableStringReaderCloner;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.ESLoggerFactory;
 
 import javax.io.StringReaderCloner;
 import java.io.BufferedReader;
@@ -45,6 +47,8 @@ import java.util.WeakHashMap;
  * to the underlying String in order to avoid copies. A generic BufferedReader
  */
 public class ReaderCloneFactory {
+
+    private static final ESLogger logger = ESLoggerFactory.getLogger(ReaderCloneFactory.class.getSimpleName());
 
     /**
      * Interface for a utility class, able to unwrap a {@link java.io.Reader}
@@ -91,8 +95,8 @@ public class ReaderCloneFactory {
     private static final WeakHashMap<Class<? extends Reader>, WeakReference<Class<? extends ReaderCloner>>> typeMap =
             new WeakHashMap<Class<? extends Reader>, WeakReference<Class<? extends ReaderCloner>>>();
     /** Map storing the mapping between a handled class and a handling instance, for {@link ReaderUnwrapper}s */
-    private static final WeakHashMap<Class<? extends Reader>, WeakReference<ReaderUnwrapper>> unwrapperTypeMap =
-            new WeakHashMap<Class<? extends Reader>, WeakReference<ReaderUnwrapper>>();
+    private static final WeakHashMap<Class<? extends Reader>, ReaderUnwrapper> unwrapperTypeMap =
+            new WeakHashMap<Class<? extends Reader>, ReaderUnwrapper>();
 
     /**
      * Add the association between a (handled) class and its handling {@link ReaderCloner}.
@@ -115,9 +119,9 @@ public class ReaderCloneFactory {
      * @param <T> The base handled class of the ReaderUnwrapper.
      * @return The previously associated ReaderUnwrapper instance for the handledClass.
      */
-    public static <T extends Reader> WeakReference<ReaderUnwrapper> bindUnwrapper(
+    public static <T extends Reader> ReaderUnwrapper bindUnwrapper(
             Class<? extends T> handledClass, ReaderUnwrapper<T> unwrapperImpl) {
-        return unwrapperTypeMap.put(handledClass, new WeakReference<ReaderUnwrapper>(unwrapperImpl));
+        return unwrapperTypeMap.put(handledClass, unwrapperImpl);
     }
 
     /**
@@ -142,10 +146,7 @@ public class ReaderCloneFactory {
      * @return The bond ReaderUnwrapper, or null.
      */
     public static <T extends Reader> ReaderUnwrapper<T> getUnwrapperStrict(Class<? extends T> forClass) {
-        WeakReference<ReaderUnwrapper> refUnwrapper = unwrapperTypeMap.get(forClass);
-        if (refUnwrapper != null)
-            return refUnwrapper.get();
-        return null;
+        return unwrapperTypeMap.get(forClass);
     }
 
     /**
@@ -205,7 +206,8 @@ public class ReaderCloneFactory {
      * @param <S> The class of the given Reader to handle
      * @return An initialized ReaderCloner suitable for the givenReader, or null.
      */
-    public static <T extends Reader, S extends T> ReaderCloner<T> getCloner(Class<T> baseClass, Class<S> forClass, S forReader) {
+    public static <T extends Reader, S extends T> ReaderCloner<T> getCloner(Class<T> baseClass, Class<S> forClass, final S forReader) {
+        final Class<S> originalForClass = forClass;
         // Loop through each super class
         while (forClass != null) {
             // Try first a matching cloner
@@ -214,7 +216,8 @@ public class ReaderCloneFactory {
                 if (forReader != null) {
                     try {
                         cloner.init(forReader);
-                    } catch (Throwable fail) {
+                    } catch (Exception e) {
+                        logger.debug("Error while initializing [{}]", e, cloner.getClass().getCanonicalName());
                         cloner = null;
                     }
                 }
@@ -232,15 +235,21 @@ public class ReaderCloneFactory {
                             return (ReaderCloner<T>)ReaderCloneFactory.getCloner(Reader.class, (Class<Reader>)unwrapped.getClass(), unwrapped);
                     } catch (Throwable ignore) {
                         // in case of errors, simply continue the began process and forget about this failed attempt
+                        logger.debug("Error while cloning [{}] with [{}]", ignore, unwrapper.getClass().getCanonicalName(), cloner.getClass().getCanonicalName());
                     }
             }
             // Continue resolution with super class...
             Class clazz = forClass.getSuperclass();
             // ... checking ancestry with the given base class
-            forClass = null;
             if (baseClass.isAssignableFrom(clazz))
                 forClass = clazz;
+            else
+                forClass = null;
         }
+        if (forReader != null)
+            logger.debug("Could not find a suitable ReaderCloner for [{}]", forReader.getClass().getCanonicalName());
+        else
+            logger.debug("Could not find a suitable ReaderCloner for class [{}]", originalForClass.getCanonicalName());
         return null;
     }
 
