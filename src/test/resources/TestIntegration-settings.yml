@@ -1,0 +1,10 @@
+---
+index:
+    analysis:
+        analyzer:
+            configured_analyzer:
+                type: combo
+                sub_analyzers:
+                    - whitespace
+                    - standard
+                    - keyword
