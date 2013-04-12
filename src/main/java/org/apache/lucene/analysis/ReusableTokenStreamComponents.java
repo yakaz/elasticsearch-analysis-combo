@@ -6,9 +6,13 @@ import java.io.Reader;
 public class ReusableTokenStreamComponents extends Analyzer.TokenStreamComponents {
 
     protected TokenStream sink;
+    private final String fieldName;
+    private final Analyzer analyzer;
 
-    public ReusableTokenStreamComponents() {
+    public ReusableTokenStreamComponents(String fieldName, Analyzer analyzer) {
         super(DummyTokenizer.INSTANCE);
+        this.fieldName = fieldName;
+        this.analyzer = analyzer;
     }
 
     public void setTokenStream(TokenStream sink) {
@@ -17,7 +21,7 @@ public class ReusableTokenStreamComponents extends Analyzer.TokenStreamComponent
 
     @Override
     protected void setReader(Reader reader) throws IOException {
-        throw new UnsupportedOperationException();
+        analyzer.createComponents(fieldName, reader);
     }
 
     @Override
