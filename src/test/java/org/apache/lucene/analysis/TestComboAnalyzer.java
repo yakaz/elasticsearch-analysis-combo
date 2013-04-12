@@ -20,6 +20,7 @@ package org.apache.lucene.analysis;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.elasticsearch.index.analysis.NamedAnalyzer;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -126,4 +127,16 @@ public class TestComboAnalyzer extends BaseTokenStreamTestCase {
                     new int[]{ 1,  0,  0,  0,  1,  1,  0,  1,  0,  1,  0});
     }
 
+
+    @Test
+    public void testCanUseFromNamedAnalyzer() throws IOException {
+        ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT, new WhitespaceAnalyzer(TEST_VERSION_CURRENT));
+        NamedAnalyzer namedAnalyzer = new NamedAnalyzer("name", cb);
+        for (int i = 0 ; i < 3 ; i++)
+            assertTokenStreamContents(namedAnalyzer.tokenStream("field", new StringReader("just a little test "+i)),
+                    new String[]{"just", "a", "little", "test", Integer.toString(i)},
+                    new int[]{ 0,  5,  7, 14, 19},
+                    new int[]{ 4,  6, 13, 18, 20},
+                    new int[]{ 1,  1,  1,  1,  1});
+    }
 }

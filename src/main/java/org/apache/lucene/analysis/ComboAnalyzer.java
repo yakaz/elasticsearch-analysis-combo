@@ -217,7 +217,7 @@ public class ComboAnalyzer extends Analyzer {
         TokenStream[] lastTokenStreams_local = lastTokenStreams.get();
         ReusableTokenStreamComponents lastComboTokenStream_local = lastComboTokenStream.get();
         if (lastComboTokenStream_local == null)
-            lastComboTokenStream_local = new ReusableTokenStreamComponents();
+            lastComboTokenStream_local = new ReusableTokenStreamComponents(fieldName, this);
 
         // Get sub-TokenStreams from sub-analyzers
         for (int i = subAnalyzers.length-1 ; i >= 0 ; --i) {
