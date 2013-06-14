@@ -6,10 +6,10 @@ import java.io.Reader;
 public class ReusableTokenStreamComponents extends Analyzer.TokenStreamComponents {
 
     protected TokenStream sink;
-    private final String fieldName;
-    private final Analyzer analyzer;
+    protected final String fieldName;
+    protected final ComboAnalyzer analyzer;
 
-    public ReusableTokenStreamComponents(String fieldName, Analyzer analyzer) {
+    public ReusableTokenStreamComponents(String fieldName, ComboAnalyzer analyzer) {
         super(DummyTokenizer.INSTANCE);
         this.fieldName = fieldName;
         this.analyzer = analyzer;
@@ -21,6 +21,9 @@ public class ReusableTokenStreamComponents extends Analyzer.TokenStreamComponent
 
     @Override
     protected void setReader(Reader reader) throws IOException {
+        // This ReusableTokenStreamComponents comes from a ReuseStrategy,
+        // which uses a ThreadLocal, hence the ComboAnalyzer will reuse
+        // this instance and make it ready.
         analyzer.createComponents(fieldName, reader);
     }
 

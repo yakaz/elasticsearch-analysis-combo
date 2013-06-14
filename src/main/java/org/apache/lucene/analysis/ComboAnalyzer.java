@@ -76,7 +76,7 @@ public class ComboAnalyzer extends Analyzer {
     private CloseableThreadLocal<ReusableTokenStreamComponents> lastComboTokenStream = new CloseableThreadLocal<ReusableTokenStreamComponents>();
 
     public ComboAnalyzer(Version version, Analyzer... subAnalyzers) {
-        super(NeverReuseStrategy.INSTANCE);
+        super(new GlobalReuseStrategy());
 
         this.subAnalyzers = subAnalyzers;
 
@@ -275,21 +275,6 @@ public class ComboAnalyzer extends Analyzer {
         lastTokenStreams.close();
         tempTokenStreams.close();
         lastComboTokenStream.close();
-    }
-
-    public static class NeverReuseStrategy extends ReuseStrategy {
-
-        public static final NeverReuseStrategy INSTANCE = new NeverReuseStrategy();
-
-        @Override
-        public TokenStreamComponents getReusableComponents(String fieldName) {
-            return null;
-        }
-
-        @Override
-        public void setReusableComponents(String fieldName, TokenStreamComponents components) {
-        }
-
     }
 
 }
