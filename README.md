@@ -6,22 +6,22 @@ The Combo Analyzer plugin provides with a new analyzer type that combines the ou
 Installation
 -----------
 
-Simply run at the root of your ElasticSearch v0.20.2+ installation:
+Simply run at the root of your ElasticSearch v0.90+ installation:
 
-	bin/plugin -install com.yakaz.elasticsearch.plugins/elasticsearch-analysis-combo/1.3.0
+	bin/plugin -install com.yakaz.elasticsearch.plugins/elasticsearch-analysis-combo/1.3.1
 
 This will download the plugin from the Central Maven Repository.
 
-For older versions of ElasticSearch, you can still use the longer:
+For older versions of ElasticSearch, you can still use v1.2.0 using the longer command:
 
-	bin/plugin -url http://oss.sonatype.org/content/repositories/releases/com/yakaz/elasticsearch/plugins/elasticsearch-analysis-combo/1.3.0/elasticsearch-analysis-combo-1.3.0.zip install elasticsearch-analysis-combo
+	bin/plugin -url http://oss.sonatype.org/content/repositories/releases/com/yakaz/elasticsearch/plugins/elasticsearch-analysis-combo/1.2.0/elasticsearch-analysis-combo-1.2.0.zip install elasticsearch-analysis-combo
 
 In order to declare this plugin as a dependency, add the following to your `pom.xml`:
 
 	<dependency>
 	    <groupId>com.yakaz.elasticsearch.plugins</groupId>
 	    <artifactId>elasticsearch-analysis-combo</artifactId>
-	    <version>1.3.0</version>
+	    <version>1.3.1</version>
 	</dependency>
 
 Version matrix:
@@ -31,15 +31,13 @@ Version matrix:
     -------------------------------------------------
     | master                       | 0.90 -> master |
     -------------------------------------------------
-    | 1.3.0                        | 0.90 -> master |
+    | 1.3.x                        | 0.90 -> master |
     -------------------------------------------------
-    | 1.2.0                        | 0.19 -> master |
+    | 1.2.x                        | 0.19 -> master |
     -------------------------------------------------
-    | 1.1.0                        | 0.19 -> master |
+    | 1.1.x                        | 0.19 -> master |
     -------------------------------------------------
-    | 1.0.1                        | 0.19 -> master |
-    -------------------------------------------------
-    | 1.0.0                        | 0.19 -> master |
+    | 1.0.x                        | 0.19 -> master |
     -------------------------------------------------
 
 Description
