@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.lucene.document;
+package org.apache.lucene.analysis;
 
 import org.apache.lucene.analysis.BaseTokenStreamTestCase;
+import org.apache.lucene.analysis.ReusableStringReaderCloner;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.util.ReaderCloneFactory;
 import org.testng.annotations.Test;
 
@@ -27,7 +29,7 @@ import java.io.Reader;
 import static javax.util.ReaderContent.assertReaderContent;
 
 /**
- * Testcase for {@link org.apache.lucene.document.ReusableStringReaderCloner}
+ * Testcase for {@link org.apache.lucene.analysis.ReusableStringReaderCloner}
  */
 @Test
 public class TestReusableStringReaderCloner extends BaseTokenStreamTestCase {
@@ -39,7 +41,7 @@ public class TestReusableStringReaderCloner extends BaseTokenStreamTestCase {
         // (and it's a real pain to use Java reflection to gain access to
         //  a package private constructor)
         Reader clone;
-        Field.ReusableStringReader reader = new Field.ReusableStringReader();
+        ReusableStringReader reader = new ReusableStringReader();
         reader.setValue("test string");
         ReaderCloneFactory.ReaderCloner<Reader> cloner = ReaderCloneFactory.getCloner(reader);
         assertNotNull(cloner);
@@ -50,7 +52,7 @@ public class TestReusableStringReaderCloner extends BaseTokenStreamTestCase {
         assertReaderContent(clone, "test string");
 
         // Test reusability
-        ReaderCloneFactory.ReaderCloner<Field.ReusableStringReader> forClassClonerStrict = ReaderCloneFactory.getClonerStrict(Field.ReusableStringReader.class);
+        ReaderCloneFactory.ReaderCloner<ReusableStringReader> forClassClonerStrict = ReaderCloneFactory.getClonerStrict(ReusableStringReader.class);
         assertNotNull(forClassClonerStrict);
         assertEquals(forClassClonerStrict.getClass().getName(), ReusableStringReaderCloner.class.getName());
         reader.setValue("another test string");
@@ -66,7 +68,7 @@ public class TestReusableStringReaderCloner extends BaseTokenStreamTestCase {
         clone = forClassClonerStrict.giveAClone();
         assertReaderContent(clone, "test string");
 
-        ReaderCloneFactory.ReaderCloner<Reader> forClassCloner = ReaderCloneFactory.getCloner(Field.ReusableStringReader.class);
+        ReaderCloneFactory.ReaderCloner<Reader> forClassCloner = ReaderCloneFactory.getCloner(ReusableStringReader.class);
         assertNotNull(forClassCloner);
         assertEquals(forClassCloner.getClass().getName(), ReusableStringReaderCloner.class.getName());
         reader.setValue("another test string");
