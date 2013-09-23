@@ -1,5 +1,7 @@
-package org.apache.lucene.document;
+package org.apache.lucene.analysis;
 
+import org.apache.lucene.analysis.ReusableStringReaderCloner;
+import org.apache.lucene.document.Field;
 import org.testng.annotations.Test;
 
 import javax.util.ReaderContent;
@@ -16,7 +18,7 @@ public class ReusableStringReaderClonerTests {
     @Test
     public void test() throws Exception {
         String content = "test\n";
-        Field.ReusableStringReader reader = new Field.ReusableStringReader();
+        ReusableStringReader reader = new ReusableStringReader();
         reader.setValue(content);
         ReusableStringReaderCloner cloner = new ReusableStringReaderCloner();
         cloner.init(reader);
@@ -37,7 +39,7 @@ public class ReusableStringReaderClonerTests {
     @Test
     public void testReuseAfterUse() throws Exception {
         String content = "test\n";
-        Field.ReusableStringReader reader = new Field.ReusableStringReader();
+        ReusableStringReader reader = new ReusableStringReader();
         reader.setValue(content);
         ReusableStringReaderCloner cloner = new ReusableStringReaderCloner();
         cloner.init(reader);
@@ -63,7 +65,7 @@ public class ReusableStringReaderClonerTests {
     @Test
     public void testReuseBeforeUse() throws Exception {
         String content = "test\n";
-        Field.ReusableStringReader reader = new Field.ReusableStringReader();
+        ReusableStringReader reader = new ReusableStringReader();
         reader.setValue(content);
         ReusableStringReaderCloner cloner = new ReusableStringReaderCloner();
         cloner.init(reader);
