@@ -17,7 +17,7 @@
 
 package org.apache.lucene.util;
 
-import org.apache.lucene.document.ReusableStringReaderCloner;
+import org.apache.lucene.analysis.ReusableStringReaderCloner;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 

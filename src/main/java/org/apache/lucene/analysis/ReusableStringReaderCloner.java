@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.lucene.document;
+package org.apache.lucene.analysis;
 
 import org.apache.lucene.util.ReaderCloneFactory;
 
@@ -26,7 +26,7 @@ import java.io.Reader;
 import java.io.StringReader;
 
 /**
- * A ReaderCloner specialized in duplicating Lucene's {@link org.apache.lucene.document.Field.ReusableStringReader}.
+ * A ReaderCloner specialized in duplicating Lucene's {@link org.apache.lucene.analysis.ReusableStringReader}.
  *
  * As this class is package private, this cloner has an additional function
  * to perform an {@code instanceof} check for you.
@@ -35,16 +35,16 @@ import java.io.StringReader;
  * private field {@code String s}, storing the original content.
  * It is therefore sensitive to Lucene implementation changes.
  */
-public class ReusableStringReaderCloner implements ReaderCloneFactory.ReaderCloner<Field.ReusableStringReader> {
+public class ReusableStringReaderCloner implements ReaderCloneFactory.ReaderCloner<ReusableStringReader> {
 
     private static java.lang.reflect.Field internalField;
 
-    private Field.ReusableStringReader original;
+    private ReusableStringReader original;
     private String originalContent;
 
     static {
         try {
-            internalField = Field.ReusableStringReader.class.getDeclaredField("s");
+            internalField = ReusableStringReader.class.getDeclaredField("s");
             internalField.setAccessible(true);
         } catch (Exception ex) {
             throw new IllegalArgumentException("Could not give accessibility to private \"str\" field of the given StringReader", ex);
@@ -52,23 +52,23 @@ public class ReusableStringReaderCloner implements ReaderCloneFactory.ReaderClon
     }
 
     /**
-     * Binds this ReaderCloner with the package-private {@link Field.ReusableStringReader} class
+     * Binds this ReaderCloner with the package-private {@link ReusableStringReader} class
      * into the {@link ReaderCloneFactory}, without giving access to the hidden class.
      */
     public static void registerCloner() {
-        ReaderCloneFactory.bindCloner(Field.ReusableStringReader.class, ReusableStringReaderCloner.class);
+        ReaderCloneFactory.bindCloner(ReusableStringReader.class, ReusableStringReaderCloner.class);
     }
 
     /**
      * @param originalReader Must pass the canHandleReader(Reader) test, otherwise an IllegalArgumentException will be thrown.
      */
-    public void init(Field.ReusableStringReader originalReader) throws IOException {
+    public void init(ReusableStringReader originalReader) throws IOException {
         this.original = originalReader;
         this.originalContent = null;
         try {
             this.originalContent = (String) internalField.get(original);
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Could not access private \"s\" field of the given org.apache.lucene.document.Field.ReusableStringReader (actual class: "+original.getClass().getCanonicalName()+")", ex);
+            throw new IllegalArgumentException("Could not access private \"s\" field of the given org.apache.lucene.document.ReusableStringReader (actual class: "+original.getClass().getCanonicalName()+")", ex);
         }
     }
 

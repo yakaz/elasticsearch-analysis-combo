@@ -8,7 +8,7 @@ Installation
 
 Simply run at the root of your ElasticSearch v0.90+ installation:
 
-	bin/plugin -install com.yakaz.elasticsearch.plugins/elasticsearch-analysis-combo/1.3.1
+	bin/plugin -install com.yakaz.elasticsearch.plugins/elasticsearch-analysis-combo/1.4.0
 
 This will download the plugin from the Central Maven Repository.
 
@@ -25,20 +25,21 @@ In order to declare this plugin as a dependency, add the following to your `pom.
 	</dependency>
 
 Version matrix:
-
-    -------------------------------------------------
-    | HashSplitter Analysis Plugin | ElasticSearch  |
-    -------------------------------------------------
-    | master                       | 0.90 -> master |
-    -------------------------------------------------
-    | 1.3.x                        | 0.90 -> master |
-    -------------------------------------------------
-    | 1.2.x                        | 0.19 -> master |
-    -------------------------------------------------
-    | 1.1.x                        | 0.19 -> master |
-    -------------------------------------------------
-    | 1.0.x                        | 0.19 -> master |
-    -------------------------------------------------
+    ┌───────────────────────┬──────────────────┐
+    │ Combo Analyzer Plugin │ ElasticSearch    │
+    ├───────────────────────┼──────────────────┤
+    │ master                │ 0.90.3 ->        │
+    ├───────────────────────┼──────────────────┤
+    │ 1.4.x                 │ 0.90.3 ->        │
+    ├───────────────────────┼──────────────────┤
+    │ 1.3.x                 │ 0.90.0 -> 0.90.2 │
+    ├───────────────────────┼──────────────────┤
+    │ 1.2.x                 │ 0.19 -> 0.20     │
+    ├───────────────────────┼──────────────────┤
+    │ 1.1.x                 │ 0.19 -> 0.20     │
+    ├───────────────────────┼──────────────────┤
+    │ 1.0.x                 │ 0.19 -> 0.20     │
+    └───────────────────────┴──────────────────┘
 
 Description
 -----------
