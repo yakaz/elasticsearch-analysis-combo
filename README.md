@@ -25,6 +25,7 @@ In order to declare this plugin as a dependency, add the following to your `pom.
 	</dependency>
 
 Version matrix:
+
     ┌───────────────────────┬──────────────────────────┐
     │ Combo Analyzer Plugin │ ElasticSearch            │
     ├───────────────────────┼──────────────────────────┤
