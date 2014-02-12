@@ -10,7 +10,7 @@ public class TestIntegration extends BaseESTest {
     @Test
     public void testAnalysis() {
         assertAnalyzesTo(ANALYZER, "just a little test",
-                new String[]{"just", "just", "just a little test", "a", "little", "little", "test", "test"},
+                new String[]{"just", "just", "just a little test", "a", "littl", "little", "test", "test"},
                 new int[]{ 0,  0,  0,  5,  7,  7, 14, 14},
                 new int[]{ 4,  4, 18,  6, 13, 13, 18, 18},
                 null,

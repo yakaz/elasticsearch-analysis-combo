@@ -8,7 +8,7 @@ Installation
 
 Simply run at the root of your ElasticSearch v0.90+ installation:
 
-	bin/plugin -install com.yakaz.elasticsearch.plugins/elasticsearch-analysis-combo/1.4.0
+	bin/plugin -install com.yakaz.elasticsearch.plugins/elasticsearch-analysis-combo/1.5.0
 
 This will download the plugin from the Central Maven Repository.
 
@@ -21,25 +21,25 @@ In order to declare this plugin as a dependency, add the following to your `pom.
 	<dependency>
 	    <groupId>com.yakaz.elasticsearch.plugins</groupId>
 	    <artifactId>elasticsearch-analysis-combo</artifactId>
-	    <version>1.3.1</version>
+	    <version>1.5.0</version>
 	</dependency>
 
 Version matrix:
-    ┌───────────────────────┬──────────────────┐
-    │ Combo Analyzer Plugin │ ElasticSearch    │
-    ├───────────────────────┼──────────────────┤
-    │ master                │ 0.90.3 ->        │
-    ├───────────────────────┼──────────────────┤
-    │ 1.4.x                 │ 0.90.3 ->        │
-    ├───────────────────────┼──────────────────┤
-    │ 1.3.x                 │ 0.90.0 -> 0.90.2 │
-    ├───────────────────────┼──────────────────┤
-    │ 1.2.x                 │ 0.19 -> 0.20     │
-    ├───────────────────────┼──────────────────┤
-    │ 1.1.x                 │ 0.19 -> 0.20     │
-    ├───────────────────────┼──────────────────┤
-    │ 1.0.x                 │ 0.19 -> 0.20     │
-    └───────────────────────┴──────────────────┘
+    ┌───────────────────────┬──────────────────────────┐
+    │ Combo Analyzer Plugin │ ElasticSearch            │
+    ├───────────────────────┼──────────────────────────┤
+    │ 1.5.x                 │ 1.0.0.RC1 ─► (1.0.0.RC2) │
+    ├───────────────────────┼──────────────────────────┤
+    │ 1.4.x                 │ 0.90.3 ─► 0.90.5         │
+    ├───────────────────────┼──────────────────────────┤
+    │ 1.3.x                 │ 0.90.0 ─► 0.90.2         │
+    ├───────────────────────┼──────────────────────────┤
+    │ 1.2.x                 │ 0.19 ─► 0.20             │
+    ├───────────────────────┼──────────────────────────┤
+    │ 1.1.x                 │ 0.19 ─► 0.20             │
+    ├───────────────────────┼──────────────────────────┤
+    │ 1.0.x                 │ 0.19 ─► 0.20             │
+    └───────────────────────┴──────────────────────────┘
 
 Description
 -----------

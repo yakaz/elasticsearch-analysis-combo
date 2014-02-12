@@ -6,5 +6,5 @@ index:
                 type: combo
                 sub_analyzers:
                     - whitespace
-                    - standard
+                    - english
                     - keyword
