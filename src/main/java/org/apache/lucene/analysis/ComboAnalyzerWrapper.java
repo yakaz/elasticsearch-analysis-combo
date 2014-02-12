@@ -20,7 +20,7 @@
 package org.apache.lucene.analysis;
 
 import org.apache.lucene.util.Version;
-import org.elasticsearch.ElasticSearchIllegalArgumentException;
+import org.elasticsearch.ElasticsearchIllegalArgumentException;
 import org.elasticsearch.common.inject.Injector;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
@@ -72,7 +72,7 @@ public final class ComboAnalyzerWrapper extends Analyzer {
         String[] sub = settings.getAsArray("sub_analyzers");
         ArrayList<Analyzer> subAnalyzers = new ArrayList<Analyzer>();
         if (sub == null) {
-            throw new ElasticSearchIllegalArgumentException("Analyzer ["+name+"] analyzer of type ["+NAME+"], must have a \"sub_analyzers\" list property");
+            throw new ElasticsearchIllegalArgumentException("Analyzer ["+name+"] analyzer of type ["+NAME+"], must have a \"sub_analyzers\" list property");
         }
 
         for (String subname : sub) {
