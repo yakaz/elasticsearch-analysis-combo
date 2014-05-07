@@ -8,7 +8,7 @@ Installation
 
 Simply run at the root of your ElasticSearch v0.90+ installation:
 
-	bin/plugin -install com.yakaz.elasticsearch.plugins/elasticsearch-analysis-combo/1.5.0
+	bin/plugin -install com.yakaz.elasticsearch.plugins/elasticsearch-analysis-combo/1.5.1
 
 This will download the plugin from the Central Maven Repository.
 
@@ -21,7 +21,7 @@ In order to declare this plugin as a dependency, add the following to your `pom.
 	<dependency>
 	    <groupId>com.yakaz.elasticsearch.plugins</groupId>
 	    <artifactId>elasticsearch-analysis-combo</artifactId>
-	    <version>1.5.0</version>
+	    <version>1.5.1</version>
 	</dependency>
 
 Version matrix:
