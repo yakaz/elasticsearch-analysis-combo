@@ -17,7 +17,7 @@
 
 package org.apache.lucene.util;
 
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import javax.io.StringReaderCloner;
 import java.io.BufferedReader;
@@ -33,7 +33,6 @@ import static javax.util.ReaderContent.assertReaderContent;
 /**
  * Testcase for {@link ReaderCloneFactory}.
  */
-@Test
 public class TestReaderCloneFactory extends LuceneTestCase {
 
     @Test

@@ -11,10 +11,10 @@ import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.network.NetworkUtils;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.node.Node;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
+import org.junit.AfterClass;
+import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.Before;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -30,7 +30,8 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class BaseESTest {
 
@@ -41,10 +42,10 @@ public class BaseESTest {
 
     private final ESLogger logger = Loggers.getLogger(getClass());
 
-    private Node node;
+    private static Node node;
 
     @BeforeClass
-    protected void setupServer() {
+    public static void setupServer() {
         node = nodeBuilder().local(true).settings(settingsBuilder()
                 .put("cluster.name", "test-cluster-" + NetworkUtils.getLocalAddress())
                 .put("gateway.type", "none")
@@ -54,7 +55,7 @@ public class BaseESTest {
     }
 
     @AfterClass
-    protected void closeServer() {
+    public static void closeServer() {
         node.close();
     }
 
@@ -78,8 +79,8 @@ public class BaseESTest {
         }
     }
 
-    @BeforeMethod
-    protected void createIndex() {
+    @Before
+    public void createIndex() {
         logger.info("creating index [" + INDEX + "]");
         CreateIndexRequest createIndexRequest = createIndexRequest(INDEX);
         String settings = getSettings();
@@ -88,7 +89,7 @@ public class BaseESTest {
         String mapping = getMapping();
         if (mapping != null)
             createIndexRequest.mapping(TYPE, getMapping());
-        assertThat("Index creation", node.client().admin().indices().create(createIndexRequest).actionGet().isAcknowledged());
+        assertTrue("Index creation", node.client().admin().indices().create(createIndexRequest).actionGet().isAcknowledged());
         logger.info("Running Cluster Health");
         ClusterHealthResponse clusterHealth = node.client().admin().cluster().health(clusterHealthRequest().waitForGreenStatus()).actionGet();
         logger.info("Done Cluster Health, status " + clusterHealth.getStatus());
@@ -96,8 +97,8 @@ public class BaseESTest {
         assertThat(clusterHealth.getStatus(), equalTo(ClusterHealthStatus.GREEN));
     }
 
-    @AfterMethod
-    protected void deleteIndex() {
+    @After
+    public void deleteIndex() {
         logger.info("deleting index [" + INDEX + "]");
         node.client().admin().indices().delete(deleteIndexRequest(INDEX)).actionGet();
     }
@@ -121,7 +122,7 @@ public class BaseESTest {
         Iterator<AnalyzeResponse.AnalyzeToken> tokens = response.iterator();
         int pos = 0;
         for (int i = 0; i < output.length; i++) {
-            assertThat("token "+i+" does not exist", tokens.hasNext());
+            assertTrue("token "+i+" does not exist", tokens.hasNext());
             AnalyzeResponse.AnalyzeToken token = tokens.next();
             assertThat("term "+i, token.getTerm(), equalTo(output[i]));
             if (startOffsets != null)

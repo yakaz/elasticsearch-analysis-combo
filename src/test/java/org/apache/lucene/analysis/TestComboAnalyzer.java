@@ -22,7 +22,7 @@ import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.elasticsearch.index.analysis.AnalyzerScope;
 import org.elasticsearch.index.analysis.NamedAnalyzer;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -37,7 +37,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 /**
  * Testcase for {@link ComboAnalyzer}
  */
-@Test
 public class TestComboAnalyzer extends BaseTokenStreamTestCase {
 
     @Test

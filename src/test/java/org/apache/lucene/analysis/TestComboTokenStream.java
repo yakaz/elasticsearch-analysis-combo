@@ -20,14 +20,13 @@ package org.apache.lucene.analysis;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import java.io.IOException;
 
 /**
  * Testcase for {@link ComboTokenStream}.
  */
-@Test
 public class TestComboTokenStream extends BaseTokenStreamTestCase {
 
     /**

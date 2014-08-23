@@ -1,17 +1,16 @@
 package javax.io;
 
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import javax.util.ReaderContent;
 import java.io.Reader;
 import java.io.StringReader;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 
-@Test
 public class StringReaderClonerTests {
 
     @Test

@@ -1,8 +1,7 @@
 package org.elasticsearch.index.analysis;
 
-import org.testng.annotations.Test;
+import org.junit.Test;
 
-@Test
 public class TestIntegration extends BaseESTest {
 
     public static final String ANALYZER = "configured_analyzer";
