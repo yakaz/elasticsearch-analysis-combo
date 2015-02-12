@@ -40,9 +40,19 @@
     <properties>
         <elasticsearch.version>1.0.0.RC1</elasticsearch.version>
         <lucene.version>4.6.0</lucene.version>
+        <!-- Activate the following when running tests against ES 1.4+ -->
+        <!--randomizedtesting-runner.version>2.1.10</randomizedtesting-runner.version-->
     </properties>
 
     <dependencies>
+        <!-- Activate the following when running tests against ES 1.4+ -->
+        <!--dependency>
+            <groupId>com.carrotsearch.randomizedtesting</groupId>
+            <artifactId>randomizedtesting-runner</artifactId>
+            <version>${randomizedtesting-runner.version}</version>
+            <scope>test</scope>
+        </dependency-->
+
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-test-framework</artifactId>
