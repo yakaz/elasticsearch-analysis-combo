@@ -1,5 +1,6 @@
 package org.apache.lucene.analysis;
 
+import org.apache.lucene.util.ReusableStringReaderCloner;
 import org.junit.Test;
 
 import javax.util.ReaderContent;

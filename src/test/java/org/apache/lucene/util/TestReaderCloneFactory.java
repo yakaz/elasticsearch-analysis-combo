@@ -19,7 +19,6 @@ package org.apache.lucene.util;
 
 import org.junit.Test;
 
-import javax.io.StringReaderCloner;
 import java.io.BufferedReader;
 import java.io.CharArrayReader;
 import java.io.FilterReader;

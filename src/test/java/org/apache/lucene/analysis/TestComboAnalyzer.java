@@ -41,7 +41,7 @@ public class TestComboAnalyzer extends BaseTokenStreamTestCase {
 
     @Test
     public void testSingleAnalyzer() throws IOException {
-        ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT, new WhitespaceAnalyzer(TEST_VERSION_CURRENT));
+        ComboAnalyzer cb = new ComboAnalyzer(new WhitespaceAnalyzer());
         for (int i = 0 ; i < 3 ; i++)
             assertTokenStreamContents(cb.tokenStream("field", new StringReader("just a little test "+i)),
                     new String[]{"just", "a", "little", "test", Integer.toString(i)},
@@ -52,9 +52,9 @@ public class TestComboAnalyzer extends BaseTokenStreamTestCase {
 
     @Test
     public void testMultipleAnalyzers() throws IOException {
-        ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT,
-                new WhitespaceAnalyzer(TEST_VERSION_CURRENT),
-                new StandardAnalyzer(TEST_VERSION_CURRENT),
+        ComboAnalyzer cb = new ComboAnalyzer(
+                new WhitespaceAnalyzer(),
+                new StandardAnalyzer(),
                 new KeywordAnalyzer()
         );
         for (int i = 0 ; i < 3 ; i++)
@@ -67,9 +67,9 @@ public class TestComboAnalyzer extends BaseTokenStreamTestCase {
 
     @Test
     public void testMultipleAnalyzersDeduplication() throws IOException {
-        ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT,
-                new WhitespaceAnalyzer(TEST_VERSION_CURRENT),
-                new StandardAnalyzer(TEST_VERSION_CURRENT),
+        ComboAnalyzer cb = new ComboAnalyzer(
+                new WhitespaceAnalyzer(),
+                new StandardAnalyzer(),
                 new KeywordAnalyzer()
         );
         cb.enableDeduplication();
@@ -82,9 +82,31 @@ public class TestComboAnalyzer extends BaseTokenStreamTestCase {
     }
 
     @Test
+    public void testCanReuseForDifferentReader() throws IOException {
+        Analyzer analyzer = new WhitespaceAnalyzer();
+        ComboAnalyzer cb = new ComboAnalyzer(
+                analyzer,
+                analyzer,
+                analyzer
+        );
+        for (int i = 0 ; i < 3 ; i++) {
+            assertTokenStreamContents(cb.tokenStream("field", new StringReader("just a little test " + i)),
+                    new String[]{"just", "just", "just", "a", "a", "a", "little", "little", "little", "test", "test", "test", Integer.toString(i), Integer.toString(i), Integer.toString(i)},
+                    new int[]{0, 0, 0, 5, 5, 5, 7, 7, 7, 14, 14, 14, 19, 19, 19},
+                    new int[]{4, 4, 4, 6, 6, 6, 13, 13, 13, 18, 18, 18, 20, 20, 20},
+                    new int[]{1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0});
+            assertTokenStreamContents(cb.tokenStream("field", new StringReader("another little test " + i)),
+                    new String[]{"another", "another", "another", "little", "little", "little", "test", "test", "test", Integer.toString(i), Integer.toString(i), Integer.toString(i)},
+                    new int[]{0, 0, 0, 8, 8, 8, 15, 15, 15, 20, 20, 20},
+                    new int[]{7, 7, 7, 14, 14, 14, 19, 19, 19, 21, 21, 21},
+                    new int[]{1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0});
+        }
+    }
+
+    @Test
     public void testThreeTimesTheSameAnalyzerInstance() throws IOException {
-        Analyzer analyzer = new WhitespaceAnalyzer(TEST_VERSION_CURRENT);
-        ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT,
+        Analyzer analyzer = new WhitespaceAnalyzer();
+        ComboAnalyzer cb = new ComboAnalyzer(
                 analyzer,
                 analyzer,
                 analyzer
@@ -99,12 +121,12 @@ public class TestComboAnalyzer extends BaseTokenStreamTestCase {
 
     @Test
     public void testCascadeCombo() throws IOException {
-        ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT,
-                new ComboAnalyzer(TEST_VERSION_CURRENT,
-                        new WhitespaceAnalyzer(TEST_VERSION_CURRENT),
+        ComboAnalyzer cb = new ComboAnalyzer(
+                new ComboAnalyzer(
+                        new WhitespaceAnalyzer(),
                         new KeywordAnalyzer()
                 ),
-                new StandardAnalyzer(TEST_VERSION_CURRENT),
+                new StandardAnalyzer(),
                 new KeywordAnalyzer()
         );
         for (int i = 0 ; i < 3 ; i++)
@@ -118,12 +140,12 @@ public class TestComboAnalyzer extends BaseTokenStreamTestCase {
     @Test
     public void testCascadeComboTwiceSameInstanceSolvedByCaching() throws IOException {
         Analyzer analyzer = new KeywordAnalyzer();
-        ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT,
-                new ComboAnalyzer(TEST_VERSION_CURRENT,
-                        new WhitespaceAnalyzer(TEST_VERSION_CURRENT),
+        ComboAnalyzer cb = new ComboAnalyzer(
+                new ComboAnalyzer(
+                        new WhitespaceAnalyzer(),
                         analyzer
                 ).enableTokenStreamCaching(),
-                new StandardAnalyzer(TEST_VERSION_CURRENT),
+                new StandardAnalyzer(),
                 analyzer
         ).enableTokenStreamCaching();
         for (int i = 0 ; i < 3 ; i++)
@@ -136,7 +158,7 @@ public class TestComboAnalyzer extends BaseTokenStreamTestCase {
 
     @Test
     public void testCanUseFromNamedAnalyzer() throws IOException {
-        ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT, new WhitespaceAnalyzer(TEST_VERSION_CURRENT));
+        ComboAnalyzer cb = new ComboAnalyzer(new WhitespaceAnalyzer());
         NamedAnalyzer namedAnalyzer = new NamedAnalyzer("name", AnalyzerScope.INDEX, cb);
         for (int i = 0 ; i < 3 ; i++)
             assertTokenStreamContents(namedAnalyzer.tokenStream("field", new StringReader("just a little test " + i)),
@@ -149,7 +171,7 @@ public class TestComboAnalyzer extends BaseTokenStreamTestCase {
     @Test
     public void testReuseSequentialMultithreading() throws IOException, InterruptedException {
         // Create the analyzer
-        final ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT, new WhitespaceAnalyzer(TEST_VERSION_CURRENT));
+        final ComboAnalyzer cb = new ComboAnalyzer(new WhitespaceAnalyzer());
         final NamedAnalyzer namedAnalyzer = new NamedAnalyzer("name", AnalyzerScope.INDEX, cb);
         // Use N threads, each running M times
         Thread[] threads = new Thread[4];
@@ -222,7 +244,7 @@ public class TestComboAnalyzer extends BaseTokenStreamTestCase {
     @Test
     public void testReuseConcurrentMultithreading() throws IOException, InterruptedException {
         // Create the analyzer
-        final ComboAnalyzer cb = new ComboAnalyzer(TEST_VERSION_CURRENT, new WhitespaceAnalyzer(TEST_VERSION_CURRENT));
+        final ComboAnalyzer cb = new ComboAnalyzer(new WhitespaceAnalyzer());
         final NamedAnalyzer namedAnalyzer = new NamedAnalyzer("name", AnalyzerScope.INDEX, cb);
         // Use N threads, each running M times
         Thread[] threads = new Thread[4];
