@@ -11,6 +11,8 @@ import org.elasticsearch.test.ESIntegTestCase;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -26,10 +28,13 @@ public class TestIntegration extends ESIntegTestCase {
 
     public static final String ANALYZER = "configured_analyzer";
 
+    protected Collection<Class<? extends Plugin>> nodePlugins() {
+        return pluginList(AnalysisComboPlugin.class);
+    }
+
     protected Settings nodeSettings(int nodeOrdinal) {
         Settings.Builder settings = Settings.builder()
-                .put(super.nodeSettings(nodeOrdinal))
-                .put("plugin.types", AnalysisComboPlugin.class.getName());
+                .put(super.nodeSettings(nodeOrdinal));
         return settings.build();
     }
 
