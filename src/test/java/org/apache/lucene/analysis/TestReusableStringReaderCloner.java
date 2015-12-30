@@ -18,6 +18,7 @@
 package org.apache.lucene.analysis;
 
 import org.apache.lucene.util.ReaderCloneFactory;
+import org.apache.lucene.util.ReusableStringReaderCloner;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -26,7 +27,7 @@ import java.io.Reader;
 import static javax.util.ReaderContent.assertReaderContent;
 
 /**
- * Testcase for {@link org.apache.lucene.analysis.ReusableStringReaderCloner}
+ * Testcase for {@link ReusableStringReaderCloner}
  */
 public class TestReusableStringReaderCloner extends BaseTokenStreamTestCase {
 

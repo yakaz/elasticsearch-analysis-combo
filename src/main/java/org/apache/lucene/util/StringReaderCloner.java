@@ -18,9 +18,7 @@
  */
 
 // Using javax instead of java because of JVM security measures!
-package javax.io;
-
-import org.apache.lucene.util.ReaderCloneFactory;
+package org.apache.lucene.util;
 
 import java.io.IOException;
 import java.io.Reader;

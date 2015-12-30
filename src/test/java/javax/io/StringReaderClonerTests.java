@@ -1,5 +1,6 @@
 package javax.io;
 
+import org.apache.lucene.util.StringReaderCloner;
 import org.junit.Test;
 
 import javax.util.ReaderContent;

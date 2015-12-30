@@ -17,11 +17,9 @@
 
 package org.apache.lucene.util;
 
-import org.apache.lucene.analysis.ReusableStringReaderCloner;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 
-import javax.io.StringReaderCloner;
 import java.io.BufferedReader;
 import java.io.CharArrayReader;
 import java.io.FilterReader;
@@ -43,7 +41,7 @@ import java.util.WeakHashMap;
  * that merely reads all the available content, and creates a String out of it.
  *
  * Therefore you should understand the importance of having a proper implementation for
- * any optimizable {@link Reader}. For instance, {@link javax.io.StringReaderCloner} gains access
+ * any optimizable {@link Reader}. For instance, {@link StringReaderCloner} gains access
  * to the underlying String in order to avoid copies. A generic BufferedReader
  */
 public class ReaderCloneFactory {

@@ -17,9 +17,8 @@
  * under the License.
  */
 
-package org.apache.lucene.analysis;
+package org.apache.lucene.util;
 
-import org.apache.lucene.util.ReaderCloneFactory;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -35,16 +34,18 @@ import java.io.StringReader;
  * private field {@code String s}, storing the original content.
  * It is therefore sensitive to Lucene implementation changes.
  */
-public class ReusableStringReaderCloner implements ReaderCloneFactory.ReaderCloner<ReusableStringReader> {
+public class ReusableStringReaderCloner implements ReaderCloneFactory.ReaderCloner<Reader> {
 
     private static java.lang.reflect.Field internalField;
+    private static Class<Reader> reusableStringReader;
 
-    private ReusableStringReader original;
+    private Reader original;
     private String originalContent;
 
     static {
         try {
-            internalField = ReusableStringReader.class.getDeclaredField("s");
+            reusableStringReader = (Class<Reader>) ReusableStringReaderCloner.class.getClassLoader().loadClass("org.apache.lucene.analysis.ReusableStringReader");
+            internalField = reusableStringReader.getDeclaredField("s");
             internalField.setAccessible(true);
         } catch (Exception ex) {
             throw new IllegalArgumentException("Could not give accessibility to private \"str\" field of the given StringReader", ex);
@@ -52,17 +53,17 @@ public class ReusableStringReaderCloner implements ReaderCloneFactory.ReaderClon
     }
 
     /**
-     * Binds this ReaderCloner with the package-private {@link ReusableStringReader} class
+     * Binds this ReaderCloner with the package-private ReusableStringReader class
      * into the {@link ReaderCloneFactory}, without giving access to the hidden class.
      */
     public static void registerCloner() {
-        ReaderCloneFactory.bindCloner(ReusableStringReader.class, ReusableStringReaderCloner.class);
+        ReaderCloneFactory.bindCloner(reusableStringReader, ReusableStringReaderCloner.class);
     }
 
     /**
      * @param originalReader Must pass the canHandleReader(Reader) test, otherwise an IllegalArgumentException will be thrown.
      */
-    public void init(ReusableStringReader originalReader) throws IOException {
+    public void init(Reader originalReader) throws IOException {
         this.original = originalReader;
         this.originalContent = null;
         try {

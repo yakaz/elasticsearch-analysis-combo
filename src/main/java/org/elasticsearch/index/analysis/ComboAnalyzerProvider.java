@@ -24,8 +24,9 @@ import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.Injector;
 import org.elasticsearch.common.inject.assistedinject.Assisted;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.Index;
-import org.elasticsearch.index.settings.IndexSettings;
+import org.elasticsearch.index.settings.IndexSettingsService;
 
 public class ComboAnalyzerProvider extends AbstractIndexAnalyzerProvider<ComboAnalyzerWrapper> {
 
@@ -33,8 +34,9 @@ public class ComboAnalyzerProvider extends AbstractIndexAnalyzerProvider<ComboAn
     private final Settings settings;
     private final String name;
 
-    @Inject ComboAnalyzerProvider(Index index, @IndexSettings Settings indexSettings, @Assisted String name, @Assisted Settings settings, Injector injector) {
-        super(index, indexSettings, name, settings);
+
+    @Inject ComboAnalyzerProvider(Index index, IndexSettingsService indexSettingsService, Environment env, @Assisted String name, @Assisted Settings settings, Injector injector) {
+        super(index, indexSettingsService.getSettings(), name, settings);
         // Store parameters for delegated usage inside the ComboAnalyzerWrapper itself
         // Sub-analyzer resolution must use the AnalysisService,
         // but as we're a dependency of it (and it's not a Proxy-able interface)
