@@ -25,7 +25,7 @@ import java.io.Reader;
 import java.io.StringReader;
 
 /**
- * A ReaderCloner specialized in duplicating Lucene's {@link org.apache.lucene.analysis.ReusableStringReader}.
+ * A ReaderCloner specialized in duplicating Lucene's org.apache.lucene.analysis.ReusableStringReader.
  *
  * As this class is package private, this cloner has an additional function
  * to perform an {@code instanceof} check for you.

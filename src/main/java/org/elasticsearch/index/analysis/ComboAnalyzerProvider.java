@@ -35,7 +35,8 @@ public class ComboAnalyzerProvider extends AbstractIndexAnalyzerProvider<ComboAn
     private final String name;
 
 
-    @Inject ComboAnalyzerProvider(Index index, IndexSettingsService indexSettingsService, Environment env, @Assisted String name, @Assisted Settings settings, Injector injector) {
+    @Inject 
+	public ComboAnalyzerProvider(Index index, IndexSettingsService indexSettingsService, Environment env, @Assisted String name, @Assisted Settings settings, Injector injector) {
         super(index, indexSettingsService.getSettings(), name, settings);
         // Store parameters for delegated usage inside the ComboAnalyzerWrapper itself
         // Sub-analyzer resolution must use the AnalysisService,

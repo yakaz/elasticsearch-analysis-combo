@@ -185,7 +185,7 @@ public class ComboAnalyzer extends Analyzer {
         }
 
         @Override
-        public void setReader(Reader reader) throws IOException {
+        public void setReader(Reader reader) {
             duplicateAnalyzers.clear();
             this.reader = reader;
         }
