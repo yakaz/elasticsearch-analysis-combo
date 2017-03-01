@@ -20,7 +20,6 @@
 package org.apache.lucene.analysis;
 
 import org.apache.lucene.util.Version;
-import org.elasticsearch.ElasticsearchIllegalArgumentException;
 import org.elasticsearch.common.inject.Injector;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
@@ -72,7 +71,7 @@ public final class ComboAnalyzerWrapper extends Analyzer {
         String[] sub = settings.getAsArray("sub_analyzers");
         ArrayList<Analyzer> subAnalyzers = new ArrayList<Analyzer>();
         if (sub == null) {
-            throw new ElasticsearchIllegalArgumentException("Analyzer ["+name+"] analyzer of type ["+NAME+"], must have a \"sub_analyzers\" list property");
+            throw new IllegalArgumentException("Analyzer ["+name+"] analyzer of type ["+NAME+"], must have a \"sub_analyzers\" list property");
         }
 
         for (String subname : sub) {
@@ -84,7 +83,7 @@ public final class ComboAnalyzerWrapper extends Analyzer {
             }
         }
 
-        this.analyzer = new org.apache.lucene.analysis.ComboAnalyzer(version, subAnalyzers.toArray(new Analyzer[subAnalyzers.size()]));
+        this.analyzer = new org.apache.lucene.analysis.ComboAnalyzer(subAnalyzers.toArray(new Analyzer[subAnalyzers.size()]));
 
         Boolean tokenstreamCaching = settings.getAsBoolean("tokenstream_caching", null);
         if (tokenstreamCaching != null)
@@ -96,9 +95,9 @@ public final class ComboAnalyzerWrapper extends Analyzer {
     }
 
     @Override
-    protected TokenStreamComponents createComponents(String fieldName, Reader reader) {
+    protected TokenStreamComponents createComponents(String fieldName) {
         if (analyzer == null) init();
-        return this.analyzer.createComponents(fieldName, reader);
+        return this.analyzer.createComponents(fieldName);
     }
 
     @Override public void close() {
