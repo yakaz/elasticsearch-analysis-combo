@@ -17,11 +17,9 @@
 
 package org.apache.lucene.util;
 
-import org.apache.lucene.analysis.ReusableStringReaderCloner;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 
-import javax.io.StringReaderCloner;
 import java.io.BufferedReader;
 import java.io.CharArrayReader;
 import java.io.FilterReader;
@@ -43,7 +41,7 @@ import java.util.WeakHashMap;
  * that merely reads all the available content, and creates a String out of it.
  *
  * Therefore you should understand the importance of having a proper implementation for
- * any optimizable {@link Reader}. For instance, {@link javax.io.StringReaderCloner} gains access
+ * any optimizable {@link Reader}. For instance, {@link StringReaderCloner} gains access
  * to the underlying String in order to avoid copies. A generic BufferedReader
  */
 public class ReaderCloneFactory {
@@ -57,7 +55,7 @@ public class ReaderCloneFactory {
      */
     public static interface ReaderUnwrapper<T extends Reader> {
         /**
-         * Unwraps a {@link Reader} from another, simplifying an eventual chain.
+         * Unwraps a {@link Reader} from another, simplifying an eventual chain.	
          */
         public Reader unwrap(T originalReader) throws IllegalArgumentException;
     }
@@ -130,13 +128,6 @@ public class ReaderCloneFactory {
     static {
         // General purpose Reader handling
         bindCloner(Reader.class, ReaderClonerDefaultImpl.class);
-        bindUnwrapper(BufferedReader.class, new BufferedReaderUnwrapper());
-        bindUnwrapper(FilterReader.class, new FilterReaderUnwrapper());
-        // Often used Java Readers
-        bindCloner(StringReader.class, StringReaderCloner.class); // very, very used inside Lucene
-        bindCloner(CharArrayReader.class, CharArrayReaderCloner.class);
-        // Lucene specific handling
-        ReusableStringReaderCloner.registerCloner();
     }
 
     /**
@@ -277,7 +268,6 @@ public class ReaderCloneFactory {
     /**
      * Returns a ReaderCloner suitable for handling general <code>S</code>s instances (inheriting {@link java.io.Reader}).
      *
-     * Calls <code>ReaderCloneFactory.<Reader,S>getCloner(Reader.class, forClass, (S)null)</code>.
      *
      * Not all optimizations can be ran, like unwrapping and failing initialization fallback.
      * However, for standard cases, when performance is really critical,
@@ -295,7 +285,6 @@ public class ReaderCloneFactory {
     /**
      * Returns an initialized ReaderCloner, for the given Reader.
      *
-     * Calls <code>ReaderCloneFactory.<Reader, S>getCloner(Reader.class, (Class<S>)forReader.getClass(), forReader)</code>.
      * If <code>forReader</code> is <code>null</code>, works as {@link ReaderCloneFactory#getGenericCloner()}.
      *
      * @param forReader The Reader instance to return and initialize a ReaderCloner for. Can be null.

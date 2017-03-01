@@ -19,12 +19,12 @@
 
 package org.elasticsearch.plugin.analysis.combo;
 
-import org.elasticsearch.common.inject.Module;
+import org.apache.lucene.analysis.ComboAnalyzerWrapper;
 import org.elasticsearch.index.analysis.AnalysisModule;
-import org.elasticsearch.index.analysis.ComboAnalysisBinderProcessor;
-import org.elasticsearch.plugins.AbstractPlugin;
+import org.elasticsearch.index.analysis.ComboAnalyzerProvider;
+import org.elasticsearch.plugins.Plugin;
 
-public class AnalysisComboPlugin extends AbstractPlugin {
+public class AnalysisComboPlugin extends Plugin {
 
     @Override public String name() {
         return "analysis-combo";
@@ -34,10 +34,7 @@ public class AnalysisComboPlugin extends AbstractPlugin {
         return "Analyser that can multiplex multiple terms from different analyzers";
     }
 
-    @Override public void processModule(Module module) {
-        if (module instanceof AnalysisModule) {
-            AnalysisModule analysisModule = (AnalysisModule) module;
-            analysisModule.addProcessor(new ComboAnalysisBinderProcessor());
-        }
+    public void onModule(AnalysisModule module) {
+        module.addAnalyzer(ComboAnalyzerWrapper.NAME, ComboAnalyzerProvider.class);
     }
 }
