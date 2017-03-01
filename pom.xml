@@ -38,7 +38,7 @@
     </parent>
 
     <properties>
-        <elasticsearch.version> 2.3.5</elasticsearch.version>
+        <elasticsearch.version>2.3.5</elasticsearch.version>
         <lucene.version>5.5.0</lucene.version>
         <mvn.java.version>1.7</mvn.java.version>
         <!-- Activate the following when running tests against ES 1.4+ -->
